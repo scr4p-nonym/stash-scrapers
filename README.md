@@ -1,24 +1,48 @@
-# Template for creating Stash scrapers source index
+# Stash scrapers
 
-This template allows you to create a new repository with a few clicks with preconfigured GitHub action to publish your scrapers source index. 
-_This assumes you already know how to create scrapers for Stash. If you don't, first read [this](https://docs.stashapp.cc/in-app-manual/scraping/scraperdevelopment/)._
+Custom URL metadata scrapers for [Stash](https://github.com/stashapp/stash).
 
-## How to use it?
+## Install
 
-1. Click **Use this template** > **Create a new repository**. 
-1. Choose a repository name and click **Create repository**.
-1. Open **Settings** and head to **Pages**.
-1. Under Build and deployment select the Source as GitHub Actions.
+In Stash, open **Settings → Metadata Providers**, add a scraper source named **scr4p-nonym** with this URL, and install **CumClub (custom)** from that source:
 
-Now add your scrapers to [scrapers](/scrapers) directory and they will be automatically published to the source index.
+```text
+https://scr4p-nonym.github.io/stash-scrapers/main/index.yml
+```
 
-Source index URL: [`https://<your-username>.github.io/<repository-name>/main/index.yml`](https://<your-username>.github.io/<repository-name>/main/index.yml)
+Scraper updates are distributed through the same source. No extra Docker container, Python installation, or browser service is needed.
 
-## Share your scrapers
+## CumClub
 
-- [Create a new topic](https://discourse.stashapp.cc/t/-/146) for your scraper on the community forum.
-- [Add your source index to the list](https://discourse.stashapp.cc/t/-/834) on the Stash community forum.
+Paste a scene URL from `cumclub.com/cc/` into a Stash scene's URL field and click the URL scrape button. Review the returned fields before applying and saving them.
+
+The scraper extracts:
+
+- Title and canonical source URL.
+- Full description with paragraph breaks, excluding the gallery and sharing widgets.
+- The actual backdrop image, retaining its existing resolution suffix.
+- Publication date from `article:published_time`, falling back to a semantic publication `<time>` element.
+
+Modification timestamps are ignored. Publication date means the site's page publication date; it does not independently establish an original scene release date. The calendar date is retained as written in the selected timestamp.
+
+If no publication date exists, the date stays empty. An optional approximate fallback can be enabled by setting `allowApproximateImageDate = true` in the YAML. It converts an image upload path such as `/wp-content/uploads/2019/01/` to `2019-01-01`. The day is assumed and the upload month may differ from release month. Updates from the source can overwrite local edits.
+
+### Verification
+
+Tested on 2026-10-17 in an isolated official Stash v0.31.1 Docker container. Three live scene pages passed checks for the complete description, title, canonical URL, publication date, and exact backdrop image bytes:
+
+| Page slug | Publication date | Description paragraphs | Description characters |
+| --- | --- | --- | --- |
+| `thick-cock-thick-load-swallowed` | 2019-01-13 | 8 | 1,640 |
+| `pov-service` | 2019-01-08 | 9 | 1,462 |
+| `big-cock-fucker` | 2019-01-18 | 9 | 1,546 |
+
+The optional approximate-date branch is disabled by default and was not exercised by these three live-page tests.
+
+## Development
+
+Scrapers live in `scrapers/`. The publishing workflow builds the source index and ZIP packages with the official [scrapers-repo-template](https://github.com/stashapp/scrapers-repo-template) build script, then deploys to GitHub Pages. Contributions to the official [CommunityScrapers](https://github.com/stashapp/CommunityScrapers) repository are reviewed separately by its maintainers.
 
 ## License
 
-The default license is set to [AGPL-3.0](/LICENCE). Before publishing any scrapers you can change it.
+AGPL-3.0. See [LICENCE](LICENCE). The source publishing script and workflow originate from the official Stash scraper repository template.
