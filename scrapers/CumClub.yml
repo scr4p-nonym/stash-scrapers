@@ -1,0 +1,41 @@
+name: CumClub (custom)
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - cumclub.com/cc/
+    scraper: sceneScraper
+
+xPathScrapers:
+  sceneScraper:
+    scene:
+      Title: //h1[contains(concat(' ', normalize-space(@class), ' '), ' entry-title ')]
+      URL: //link[@rel='canonical']/@href
+      Details:
+        # Full description, rather than the truncated SEO description.
+        # Exclude the gallery, sharing buttons, and related-post widgets.
+        selector: //div[contains(concat(' ', normalize-space(@class), ' '), ' entry-content ')]/p[normalize-space(.) != '' and not(preceding-sibling::h2)]
+        concat: "\n\n"
+      Image:
+        # Use the actual backdrop, including its existing resolution suffix.
+        selector: //div[contains(concat(' ', normalize-space(@class), ' '), ' entry-cover ') and contains(@style, 'background-image')]/@style
+        postProcess:
+          - javascript: |
+              var match = value.match(/background-image\s*:\s*url\(\s*["']?([^"')]+)["']?\s*\)/i);
+              return match ? match[1].trim() : "";
+      Date:
+        # Prefer the published date, then a semantic publication time.
+        # The backdrop is included ONLY for the optional month fallback below.
+        selector: (//meta[@property='article:published_time' and normalize-space(@content) != '']/@content)[1] | (//time[(contains(concat(' ', normalize-space(@class), ' '), ' published ') or @itemprop='datePublished') and normalize-space(@datetime) != '' and not(//meta[@property='article:published_time' and normalize-space(@content) != ''])]/@datetime)[1] | (//div[contains(concat(' ', normalize-space(@class), ' '), ' entry-cover ') and not(//meta[@property='article:published_time' and normalize-space(@content) != '']) and not(//time[(contains(concat(' ', normalize-space(@class), ' '), ' published ') or @itemprop='datePublished') and normalize-space(@datetime) != ''])]/@style)[1]
+        postProcess:
+          - javascript: |
+              // Opt in by changing false to true. This invents day 01 from
+              // an image upload month; it is NOT a confirmed release date.
+              var allowApproximateImageDate = false;
+              var published = value.match(/^\s*(\d{4}-\d{2}-\d{2})(?:T|\s|$)/);
+              if (published) return published[1];
+              if (!allowApproximateImageDate) return "";
+              var upload = value.match(/\/wp-content\/uploads\/(\d{4})\/(0[1-9]|1[0-2])\//);
+              return upload ? upload[1] + "-" + upload[2] + "-01" : "";
+
+# No Python, CDP, browser, cookies, or extra container required.
+# Last updated: 2026-10-17
