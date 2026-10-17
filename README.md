@@ -19,11 +19,18 @@ Paste a scene URL from `cumclub.com/cc/` into a Stash scene's URL field and clic
 The scraper extracts:
 
 - Title and canonical source URL.
+- Studio: **CumClub**, with its official site URL.
 - Full description with paragraph breaks, excluding the gallery and sharing widgets.
 - The actual backdrop image, retaining its existing resolution suffix.
 - Publication date from `article:published_time`, falling back to a semantic publication `<time>` element.
 
 Modification timestamps are ignored. Publication date means the site's page publication date; it does not independently establish an original scene release date. The calendar date is retained as written in the selected timestamp.
+
+### Studio matching
+
+The scraper returns the studio name **CumClub**. Stash matches that to an existing local studio by name or alias. If no local entry exists, create or import the studio once and select it when applying the scrape.
+
+The corresponding [StashDB studio](https://stashdb.org/studios/28c633bf-a45e-4643-a26d-a25558a430eb) has ID `28c633bf-a45e-4643-a26d-a25558a430eb`. That external ID belongs on the local studio record as a StashDB association; the YAML scraper does not set it. Importing the studio from StashDB is the usual way to establish the association. Performer extraction is intentionally omitted.
 
 If no publication date exists, the date stays empty. An optional approximate fallback can be enabled by setting `allowApproximateImageDate = true` in the YAML. It converts an image upload path such as `/wp-content/uploads/2019/01/` to `2019-01-01`. The day is assumed and the upload month may differ from release month. Updates from the source can overwrite local edits.
 
@@ -38,6 +45,8 @@ Tested on 2026-10-17 in an isolated official Stash v0.31.1 Docker container. Thr
 | `big-cock-fucker` | 2019-01-18 | 9 | 1,546 |
 
 The optional approximate-date branch is disabled by default and was not exercised by these three live-page tests.
+
+Studio assignment was also verified on all three pages, and a further test confirmed automatic matching to an existing local CumClub studio carrying the StashDB ID above.
 
 ## Development
 
