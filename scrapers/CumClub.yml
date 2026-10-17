@@ -10,6 +10,11 @@ xPathScrapers:
     scene:
       Title: //h1[contains(concat(' ', normalize-space(@class), ' '), ' entry-title ')]
       URL: //link[@rel='canonical']/@href
+      Studio:
+        Name:
+          fixed: CumClub
+        URLs:
+          fixed: https://www.cumclub.com/cc/
       Details:
         # Full description, rather than the truncated SEO description.
         # Exclude the gallery, sharing buttons, and related-post widgets.
