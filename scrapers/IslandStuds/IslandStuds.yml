@@ -1,0 +1,20 @@
+name: Island Studs (custom)
+sceneByURL:
+  - action: script
+    url:
+      - islandstuds.com/tour/scenes/
+    script:
+      - python
+      - islandstuds.py
+      - scene
+performerByURL:
+  - action: script
+    url:
+      - islandstuds.com/tour/models/
+    script:
+      - python
+      - islandstuds.py
+      - performer
+# Python standard library only. No login, browser, or local API setup.
+# Scene performers come only from the main Featuring links.
+# Last updated: 2026-10-23
