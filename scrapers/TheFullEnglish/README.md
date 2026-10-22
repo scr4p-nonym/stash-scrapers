@@ -12,7 +12,7 @@ Refresh the source to find the new scraper. The scraper requires Python 3, which
 
 Paste an individual `/updates/...` URL into a scene's URL field and click the scrape button. Review the results, select the desired fields, then apply and save them.
 
-The scraper returns the title, full description, main scene image, canonical URL, **The Full English** studio, and verified site performers. Performers include **Male** gender and, when available, their biography and photo. The scene image's signed CDN query parameters are retained so Stash can fetch it immediately; stale image URLs are not cached.
+The scraper returns the title, full description, main scene image, canonical URL, **The Full English** studio, and verified site performers. Performers include **Male** gender, **The Full English** disambiguation, and, when available, their biography and photo. The scene image's signed CDN query parameters are retained so Stash can fetch it immediately; stale image URLs are not cached.
 
 The site does not expose cast links on the scene page. The helper considers names from its model directory, then includes a performer only if that model's public profile lists the **exact scene URL**. A name mentioned in the description alone is insufficient. This can miss performers whose names are absent from the scene metadata or whose profile listings are incomplete; it is not a guarantee of a complete cast. At most 16 candidate profiles are checked per scene.
 
@@ -20,7 +20,7 @@ The publication date comes from explicit page metadata when available, otherwise
 
 ## Performer URLs and local matching
 
-Individual `/models/...` URLs can also be scraped directly in a performer editor. These return the site name, profile URL, **Male** gender, biography, and optional main profile photo. Portraits are fetched immediately and returned as embedded image data, so a delayed import does not depend on an expiring URL. If the image server returns 403 or another image error, the rest of the model metadata still imports.
+Individual `/models/...` URLs can also be scraped directly in a performer editor. These return the site name, profile URL, **Male** gender, **The Full English** disambiguation, biography, and optional main profile photo. Portraits are fetched immediately and returned as embedded image data, so a delayed import does not depend on an expiring URL. If the image server returns 403 or another image error, the rest of the model metadata still imports.
 
 Site names such as **Billy** do not establish a StashDB identity. Stash may match local performers by name or alias; review first-name matches before applying them. The scraper supplies profile URLs but does not guess StashDB performer IDs or full names.
 

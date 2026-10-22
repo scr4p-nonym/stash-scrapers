@@ -204,7 +204,8 @@ def performer(url):
     if not re.fullmatch(r'/models/[^/]+', urlsplit(url).path):
         raise ValueError('Use an individual model profile URL')
     root = fetch(url)
-    result = {'name': title(root), 'urls': [url], 'gender': 'Male'}
+    result = {'name': title(root), 'urls': [url], 'gender': 'Male',
+              'disambiguation': 'The Full English'}
     details, image = description(root), optional_portrait(root, url)
     if details:
         result['details'] = details
@@ -248,7 +249,8 @@ def scene(url):
             try:
                 profile = filmography(model['url'])
                 if url in profile['scenes']:
-                    model_result = {'name': profile['name'], 'urls': [model['url']], 'gender': 'Male'}
+                    model_result = {'name': profile['name'], 'urls': [model['url']],
+                                    'gender': 'Male', 'disambiguation': 'The Full English'}
                     try:
                         # Fetch a fresh profile for its expiring portrait URL.
                         # Returning image bytes keeps delayed imports working.
