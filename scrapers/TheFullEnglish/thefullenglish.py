@@ -3,6 +3,7 @@
 AGPL-3.0. Cast candidates are verified against actual model filmographies;
 names mentioned in prose alone are never returned as scene performers.
 """
+import base64
 import hashlib
 from html.parser import HTMLParser
 import json
@@ -137,6 +138,27 @@ def cover(root):
     return urljoin(BASE, image.attrs['src']) if image else None
 
 
+def optional_portrait(root, profile_url):
+    """Capture signed portraits immediately; an image failure is nonfatal."""
+    image = cover(root)
+    if not image:
+        return None
+    try:
+        request = Request(image, headers={
+            'User-Agent': 'Mozilla/5.0 (compatible; StashMetadataScraper)',
+            'Referer': profile_url, 'Accept': 'image/*'})
+        with urlopen(request, timeout=15) as response:
+            content_type = response.headers.get_content_type()
+            if not content_type.startswith('image/'):
+                log('Skipping portrait: server did not return an image')
+                return None
+            data = response.read()
+        return 'data:' + content_type + ';base64,' + base64.b64encode(data).decode('ascii')
+    except Exception as error:
+        log('Portrait unavailable; keeping performer metadata: ' + str(error))
+        return None
+
+
 def date_from_text(text):
     # The first calendar date is publication, before any later Updated date.
     match = re.search(r'\b([A-Z][a-z]+ \d{1,2}, \d{4})\b', clean(text))
@@ -182,8 +204,8 @@ def performer(url):
     if not re.fullmatch(r'/models/[^/]+', urlsplit(url).path):
         raise ValueError('Use an individual model profile URL')
     root = fetch(url)
-    result = {'name': title(root), 'urls': [url]}
-    details, image = description(root), cover(root)
+    result = {'name': title(root), 'urls': [url], 'gender': 'Male'}
+    details, image = description(root), optional_portrait(root, url)
     if details:
         result['details'] = details
     if image:
@@ -226,7 +248,14 @@ def scene(url):
             try:
                 profile = filmography(model['url'])
                 if url in profile['scenes']:
-                    found.append({'name': profile['name'], 'urls': [model['url']]})
+                    model_result = {'name': profile['name'], 'urls': [model['url']], 'gender': 'Male'}
+                    try:
+                        # Fetch a fresh profile for its expiring portrait URL.
+                        # Returning image bytes keeps delayed imports working.
+                        model_result = performer(model['url'])
+                    except Exception as error:
+                        log('Profile details unavailable; keeping verified performer: ' + str(error))
+                    found.append(model_result)
                     if profile['scenes'][url]:
                         dates.add(profile['scenes'][url])
             except Exception as error:
