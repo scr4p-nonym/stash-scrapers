@@ -1,0 +1,20 @@
+name: "My Best Friend's Dad (custom)"
+sceneByURL:
+  - action: script
+    url:
+      - mybestfriendsdad.com/updates/
+    script:
+      - python
+      - mybestfriendsdad.py
+      - scene
+performerByURL:
+  - action: script
+    url:
+      - mybestfriendsdad.com/models/
+    script:
+      - python
+      - mybestfriendsdad.py
+      - performer
+# Python standard library only; no pip packages, CDP, or API configuration.
+# Cast is verified against each model's explicit scene listing.
+# Last updated: 2026-10-22

@@ -4,7 +4,7 @@ Custom URL metadata scrapers for [Stash](https://github.com/stashapp/stash).
 
 ## Install
 
-In Stash, open **Settings → Metadata Providers**, add a scraper source named **scr4p-nonym** with this URL, and install **CumClub (custom)** and/or **The Full English (custom)** from that source:
+In Stash, open **Settings → Metadata Providers**, add a scraper source named **scr4p-nonym** with this URL, and install the desired scrapers from that source:
 
 ```text
 https://scr4p-nonym.github.io/stash-scrapers/main/index.yml
@@ -53,6 +53,12 @@ Studio assignment was also verified on all three pages, and a further test confi
 Scene URL scraping and direct model-profile scraping are available in **The Full English (custom)**. It returns the scene description, cover image, publication date when available, fixed studio, and site performers whose profiles explicitly list the requested scene URL. No StashDB performer identities are guessed.
 
 The helper uses Python's standard library only. Python is included in the official Stash Docker image tested here; no pip packages, browser service, or login are needed. See the [scraper instructions and test results](scrapers/TheFullEnglish/README.md) for matching limitations, caching, and installation details.
+
+## My Best Friend's Dad
+
+**My Best Friend's Dad (custom)** supports scene URLs and direct model-profile URLs. It returns full descriptions, cover images, publication dates when available, the fixed studio, and performers whose profiles explicitly list the scene URL. Models include Male gender, site disambiguation, and optional embedded portraits. It uses Python's standard library with no local API configuration.
+
+See the [scraper instructions and test results](scrapers/MyBestFriendsDad/README.md).
 
 ## Development
 
