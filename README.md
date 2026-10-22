@@ -4,7 +4,7 @@ Custom URL metadata scrapers for [Stash](https://github.com/stashapp/stash).
 
 ## Install
 
-In Stash, open **Settings → Metadata Providers**, add a scraper source named **scr4p-nonym** with this URL, and install **CumClub (custom)** from that source:
+In Stash, open **Settings → Metadata Providers**, add a scraper source named **scr4p-nonym** with this URL, and install **CumClub (custom)** and/or **The Full English (custom)** from that source:
 
 ```text
 https://scr4p-nonym.github.io/stash-scrapers/main/index.yml
@@ -47,6 +47,12 @@ Tested on 2026-10-17 in an isolated official Stash v0.31.1 Docker container. Thr
 The optional approximate-date branch is disabled by default and was not exercised by these three live-page tests.
 
 Studio assignment was also verified on all three pages, and a further test confirmed automatic matching to an existing local CumClub studio carrying the StashDB ID above.
+
+## The Full English
+
+Scene URL scraping and direct model-profile scraping are available in **The Full English (custom)**. It returns the scene description, cover image, publication date when available, fixed studio, and site performers whose profiles explicitly list the requested scene URL. No StashDB performer identities are guessed.
+
+The helper uses Python's standard library only. Python is included in the official Stash Docker image tested here; no pip packages, browser service, or login are needed. See the [scraper instructions and test results](scrapers/TheFullEnglish/README.md) for matching limitations, caching, and installation details.
 
 ## Development
 

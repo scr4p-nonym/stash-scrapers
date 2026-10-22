@@ -1,0 +1,20 @@
+name: The Full English (custom)
+sceneByURL:
+  - action: script
+    url:
+      - thefullenglish.net/updates/
+    script:
+      - python
+      - thefullenglish.py
+      - scene
+performerByURL:
+  - action: script
+    url:
+      - thefullenglish.net/models/
+    script:
+      - python
+      - thefullenglish.py
+      - performer
+# Python standard library only; no pip packages, CDP, or login required.
+# Cast is returned only after the model's profile lists the exact scene URL.
+# Last updated: 2026-10-22
