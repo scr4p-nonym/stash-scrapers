@@ -12,7 +12,9 @@ Python 3 is included in the official Stash Docker image tested here. The scraper
 
 Scrape individual `/tour/scenes/...html` URLs from a scene's URL field. Review the metadata, select fields to apply, and save the scene.
 
-Returned fields include the scene title, full description with paragraph breaks, publication date, main cover from the page's Open Graph metadata, source URL, and fixed **Island Studs** studio.
+Returned fields include the scene title, full description with paragraph breaks, publication date, main cover, source URL, and fixed **Island Studs** studio. Images are downloaded and embedded before the result is returned, so saving does not depend on fetching the remote URL again.
+
+For covers, the scraper tries Open Graph metadata first, then the actual player poster and the main scene's preview thumbnail. Invalid directory URLs and non-image responses are rejected. If all declared images fail, the other metadata remains available without a broken image URL.
 
 Performers come only from the main scene's explicit **Featuring** links. Model links on recommended scenes are excluded. Each credited performer includes the site name, profile URL, **Male** gender, **Island Studs** disambiguation, and an optional embedded portrait. A profile fetch failure preserves the credited performer's basic metadata.
 
@@ -20,7 +22,7 @@ The displayed date is parsed as month/day/year. Dates are never inferred from a 
 
 ## Models and photos
 
-Individual `/tour/models/...html` URLs can be scraped directly in a performer editor. The scraper reads the model heading and the site's lazy-loaded portrait attributes, choosing the largest declared `src0_Nx` image. Portraits are downloaded immediately and returned as embedded image data. An image error, including HTTP 403, leaves the remaining performer fields available.
+Individual `/tour/models/...html` URLs can be scraped directly in a performer editor. The scraper reads the model heading and the site's lazy-loaded portrait attributes. It tries the largest declared `src0_Nx` image first, then smaller versions and older `src0`/`src` attributes. Portraits are downloaded immediately and returned as embedded image data. An image error, including HTTP 403, leaves the remaining performer fields available.
 
 A biography is included only when the profile actually provides one. Ratings and review widgets are excluded; Eli Daddy's tested profile has a portrait but no biography.
 
@@ -39,6 +41,8 @@ Tested through the official Stash v0.31.1 Docker image on 2026-10-23:
 | Hal 2 - Anal | 2021-12-15 | Hal |
 
 All three tests checked the title, full description, exact cover image bytes, date, studio, cast scope, model URL, gender, and disambiguation. Further tests checked Eli's direct portrait scrape, omission of a nonexistent biography, matching to an existing local studio associated with the supplied StashDB ID, and graceful handling of an HTTP 403 portrait failure.
+
+The legacy-image fix was also tested with **Logan** (`Logan_vids.html`, dated 2013-12-18). That page's Open Graph image points to a folder that returns HTTP 403; the player poster is used instead, and the model portrait is found through its legacy `src0` attribute. Both images were actually saved to scene/performer records and successfully retrieved from Stash afterward. Controlled tests checked fallback after a missing high-resolution portrait and rejection of HTML returned in place of an image. The three earlier live-scene tests were rerun successfully.
 
 ## Manual installation
 

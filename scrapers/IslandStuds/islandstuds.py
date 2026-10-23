@@ -80,24 +80,34 @@ def fetch(url):
 
 
 def optional_portrait(root, profile_url):
-    """Capture signed portraits immediately; an image failure is nonfatal."""
-    image = cover(root)
-    if not image:
-        return None
-    try:
-        request = Request(image, headers={
-            'User-Agent': 'Mozilla/5.0 (compatible; StashMetadataScraper)',
-            'Referer': profile_url, 'Accept': 'image/*'})
-        with urlopen(request, timeout=15) as response:
-            content_type = response.headers.get_content_type()
-            if not content_type.startswith('image/'):
-                log('Skipping portrait: server did not return an image')
-                return None
-            data = response.read()
-        return 'data:' + content_type + ';base64,' + base64.b64encode(data).decode('ascii')
-    except Exception as error:
-        log('Portrait unavailable; keeping performer metadata: ' + str(error))
-        return None
+    return optional_image(root, profile_url, portrait=True)
+
+
+def optional_image(root, page_url, portrait=False):
+    """Try declared image alternatives; never return an unusable remote URL."""
+    for image in image_candidates(root, portrait):
+        try:
+            request = Request(image, headers={
+                'User-Agent': 'Mozilla/5.0 (compatible; StashMetadataScraper)',
+                'Referer': page_url, 'Accept': 'image/*'})
+            with urlopen(request, timeout=15) as response:
+                data = response.read()
+            if data.startswith(b'\xff\xd8\xff'):
+                content_type = 'image/jpeg'
+            elif data.startswith(b'\x89PNG\r\n\x1a\n'):
+                content_type = 'image/png'
+            elif data[:6] in (b'GIF87a', b'GIF89a'):
+                content_type = 'image/gif'
+            elif data.startswith(b'RIFF') and data[8:12] == b'WEBP':
+                content_type = 'image/webp'
+            else:
+                log('Skipping image: server did not return supported image bytes')
+                continue
+            return 'data:' + content_type + ';base64,' + base64.b64encode(data).decode('ascii')
+        except Exception as error:
+            log('Image alternative unavailable: ' + str(error))
+    log(('Portrait' if portrait else 'Scene image') + ' unavailable; keeping other metadata')
+    return None
 
 
 def canonical(url):
@@ -116,14 +126,42 @@ def meta(root, property_name):
 
 def cover(root):
     portrait = root.first(lambda n: n.tag == 'img' and n.has_class('model_bio_thumb'))
-    if portrait:
-        # Island Studs uses src0_1x/src0_2x/src0_3x instead of normal src.
-        variants = [(int(match[1]), value) for key, value in portrait.attrs.items()
+    return next(image_candidates(root, portrait is not None), None)
+
+
+def image_candidates(root, portrait=False):
+    candidates = []
+
+    def add_thumbnail(image):
+        variants = [(int(match[1]), value) for key, value in image.attrs.items()
                     if (match := re.fullmatch(r'src0_(\d+)x', key)) and value]
-        url = max(variants)[1] if variants else portrait.attrs.get('src')
-        return urljoin(BASE, url) if url else None
-    url = meta(root, 'og:image')
-    return urljoin(BASE, url) if url else None
+        candidates.extend(value for _, value in sorted(variants, reverse=True))
+        # Older sets use src0 with no resolution suffix.
+        candidates.extend(image.attrs.get(key) for key in ('src0', 'src'))
+
+    if portrait:
+        image = root.first(lambda n: n.tag == 'img' and n.has_class('model_bio_thumb'))
+        if image:
+            add_thumbnail(image)
+    else:
+        candidates.append(meta(root, 'og:image'))
+        for script in root.all(lambda n: n.tag == 'script'):
+            candidates.extend(re.findall(r'''\bthumbnail\s*:\s*["']([^"']+)["']''', script.text()))
+        image = root.first(lambda n: n.tag == 'img' and n.has_class('small_update_thumb'))
+        if image:
+            add_thumbnail(image)
+    seen = set()
+    for value in candidates:
+        if not value:
+            continue
+        image_url = urljoin(BASE, value.replace('\\/', '/'))
+        # A few older pages advertise the thumbnail folder, not an image.
+        parts = urlsplit(image_url)
+        if parts.scheme not in {'http', 'https'} or parts.path.endswith('/'):
+            continue
+        if image_url not in seen:
+            seen.add(image_url)
+            yield image_url
 
 
 def readable_text(node):
@@ -176,7 +214,7 @@ def scene(url):
     text = description(root.first(lambda n: n.has_class('update_description')))
     if text:
         result['details'] = text
-    image = cover(root)
+    image = optional_image(root, url)
     if image:
         result['image'] = image
     date_node = root.first(lambda n: n.has_class('update_date'))
