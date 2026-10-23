@@ -83,9 +83,9 @@ def optional_portrait(root, profile_url):
     return optional_image(root, profile_url, portrait=True)
 
 
-def optional_image(root, page_url, portrait=False):
-    """Try declared image alternatives; never return an unusable remote URL."""
-    for image in image_candidates(root, portrait):
+def first_available_image(candidates, page_url):
+    """Download one valid image, trying smaller declared versions on failure."""
+    for image in candidates:
         try:
             request = Request(image, headers={
                 'User-Agent': 'Mozilla/5.0 (compatible; StashMetadataScraper)',
@@ -106,8 +106,68 @@ def optional_image(root, page_url, portrait=False):
             return 'data:' + content_type + ';base64,' + base64.b64encode(data).decode('ascii')
         except Exception as error:
             log('Image alternative unavailable: ' + str(error))
-    log(('Portrait' if portrait else 'Scene image') + ' unavailable; keeping other metadata')
     return None
+
+
+def optional_image(root, page_url, portrait=False, preferred=()):
+    """Try declared image alternatives; never return an unusable remote URL."""
+    candidates = list(image_urls(preferred)) + list(image_candidates(root, portrait))
+    image = first_available_image(candidates, page_url)
+    if not image:
+        log(('Portrait' if portrait else 'Scene image') + ' unavailable; keeping other metadata')
+    return image
+
+
+def performer_images(root, profile_url, name):
+    """Offer the portrait plus up to seven distinct solo-scene preview pictures."""
+    portrait = optional_portrait(root, profile_url)
+    images = [portrait] if portrait else []
+    seen_urls, seen_images = set(), set(images)
+    attempts = 0
+    for card in root.all(lambda n: n.has_class('update_details')):
+        cast = card.first(lambda n: n.has_class('update_models'))
+        if cast is None:
+            continue
+        credits = [clean(a.text()) for a in cast.all(lambda n: n.tag == 'a')]
+        # A profile may list group scenes too; these are not individual portraits.
+        if credits != [name]:
+            continue
+        thumbnail = card.first(lambda n: n.tag == 'img' and n.has_class('update_thumb'))
+        if thumbnail is None:
+            continue
+        indexes = sorted({int(match[1]) for key in thumbnail.attrs
+                          if (match := re.fullmatch(r'src(\d+)(?:_\d+x)?', key))})
+        for index in indexes:
+            candidates = [u for u in image_urls(thumbnail_values(thumbnail, index))
+                          if u not in seen_urls]
+            if not candidates:
+                continue
+            seen_urls.update(candidates)
+            attempts += 1
+            image = first_available_image(candidates, profile_url)
+            if image and image not in seen_images:
+                seen_images.add(image)
+                images.append(image)
+            if len(images) >= 8 or attempts >= 12:
+                return images
+    return images
+
+
+def scene_profile_images(root, profile_url, scene_url):
+    """Find this exact scene's official thumbnail on a credited model's page."""
+    base_node = root.first(lambda n: n.tag == 'base' and n.attrs.get('href'))
+    document_base = urljoin(profile_url, base_node.attrs['href']) if base_node else profile_url
+    for card in root.all(lambda n: n.has_class('update_details')):
+        for anchor in card.all(lambda n: n.tag == 'a' and n.attrs.get('href')):
+            try:
+                if canonical(urljoin(document_base, anchor.attrs['href'])) != scene_url:
+                    continue
+            except ValueError:
+                continue
+            image = card.first(lambda n: n.tag == 'img' and n.has_class('update_thumb'))
+            if image:
+                return thumbnail_values(image)
+    return []
 
 
 def canonical(url):
@@ -145,27 +205,34 @@ def cover(root):
     return next(image_candidates(root, portrait is not None), None)
 
 
+def thumbnail_values(image, index=0):
+    variants = [(int(match[1]), value) for key, value in image.attrs.items()
+                if (match := re.fullmatch(r'src' + str(index) + r'_(\d+)x', key)) and value]
+    values = [value for _, value in sorted(variants, reverse=True)]
+    values.append(image.attrs.get('src' + str(index)))
+    if index == 0:
+        values.append(image.attrs.get('src'))
+    return values
+
+
 def image_candidates(root, portrait=False):
     candidates = []
-
-    def add_thumbnail(image):
-        variants = [(int(match[1]), value) for key, value in image.attrs.items()
-                    if (match := re.fullmatch(r'src0_(\d+)x', key)) and value]
-        candidates.extend(value for _, value in sorted(variants, reverse=True))
-        # Older sets use src0 with no resolution suffix.
-        candidates.extend(image.attrs.get(key) for key in ('src0', 'src'))
 
     if portrait:
         image = root.first(lambda n: n.tag == 'img' and n.has_class('model_bio_thumb'))
         if image:
-            add_thumbnail(image)
+            candidates.extend(thumbnail_values(image))
     else:
         candidates.append(meta(root, 'og:image'))
         for script in root.all(lambda n: n.tag == 'script'):
             candidates.extend(re.findall(r'''\bthumbnail\s*:\s*["']([^"']+)["']''', script.text()))
         image = root.first(lambda n: n.tag == 'img' and n.has_class('small_update_thumb'))
         if image:
-            add_thumbnail(image)
+            candidates.extend(thumbnail_values(image))
+    yield from image_urls(candidates)
+
+
+def image_urls(candidates):
     seen = set()
     for value in candidates:
         if not value:
@@ -197,11 +264,12 @@ def description(node):
     return re.sub(r'\n{3,}', '\n\n', text).strip()
 
 
-def performer(url):
+def performer(url, multiple_images=True, root=None):
     url = canonical(url)
     if not is_model_url(url) or url.endswith('/models.html') or is_collection('', url):
         raise ValueError('Use an individual model profile URL')
-    root = fetch(url)
+    if root is None:
+        root = fetch(url)
     heading = root.first(lambda n: n.has_class('title_bar_hilite'))
     if heading is None or not clean(heading.text()):
         raise ValueError('Model name was not found on this page')
@@ -212,9 +280,13 @@ def performer(url):
     bio = description(root.first(lambda n: n.has_class('model_bio')))
     if bio:
         result['details'] = bio
-    image = optional_portrait(root, url)
-    if image:
-        result['images'] = [image]
+    if multiple_images:
+        images = performer_images(root, url, result['name'])
+    else:
+        image = optional_portrait(root, url)
+        images = [image] if image else []
+    if images:
+        result['images'] = images
     return result
 
 
@@ -232,9 +304,6 @@ def scene(url):
     text = description(root.first(lambda n: n.has_class('update_description')))
     if text:
         result['details'] = text
-    image = optional_image(root, url)
-    if image:
-        result['image'] = image
     date_node = root.first(lambda n: n.has_class('update_date'))
     if date_node:
         match = re.search(r'\b\d{1,2}/\d{1,2}/\d{4}\b', date_node.text())
@@ -247,7 +316,7 @@ def scene(url):
     cast = root.first(lambda n: n.has_class('update_models'))
     base_node = root.first(lambda n: n.tag == 'base' and n.attrs.get('href'))
     document_base = urljoin(url, base_node.attrs['href']) if base_node else url
-    performers, seen = [], set()
+    performers, seen, preferred_images = [], set(), []
     if cast:
         for anchor in cast.all(lambda n: n.tag == 'a' and n.attrs.get('href')):
             try:
@@ -262,7 +331,9 @@ def scene(url):
                 if not model['name']:
                     continue
                 try:
-                    model = performer(model_url)
+                    profile = fetch(model_url)
+                    preferred_images.extend(scene_profile_images(profile, model_url, url))
+                    model = performer(model_url, multiple_images=False, root=profile)
                 except Exception as error:
                     log('Profile unavailable; keeping the credited performer: ' + str(error))
                 performers.append(model)
@@ -270,6 +341,9 @@ def scene(url):
                 continue
     if performers:
         result['performers'] = performers
+    image = optional_image(root, url, preferred=preferred_images)
+    if image:
+        result['image'] = image
     return result
 
 
