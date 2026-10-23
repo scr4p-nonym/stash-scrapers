@@ -11,6 +11,7 @@ performerByURL:
   - action: script
     url:
       - islandstuds.com/tour/models/
+      - islandstuds.com/tour/sets.php
     script:
       - python
       - islandstuds.py

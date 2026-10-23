@@ -5,7 +5,7 @@ from html.parser import HTMLParser
 import json
 import re
 import sys
-from urllib.parse import urljoin, urlsplit, urlunsplit
+from urllib.parse import parse_qs, urlencode, urljoin, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
 BASE = 'https://www.islandstuds.com'
@@ -116,7 +116,23 @@ def canonical(url):
         raise ValueError('Expected an islandstuds.com URL')
     if parts.scheme not in {'http', 'https'}:
         raise ValueError('Expected an HTTP(S) URL')
-    return urlunsplit(('https', 'www.islandstuds.com', parts.path, '', ''))
+    query = ''
+    if parts.path == '/tour/sets.php':
+        model_ids = parse_qs(parts.query).get('id', [])
+        if len(model_ids) != 1 or not model_ids[0].isdigit():
+            raise ValueError('Legacy model links require a numeric id')
+        query = urlencode({'id': model_ids[0]})
+    return urlunsplit(('https', 'www.islandstuds.com', parts.path, query, ''))
+
+
+def is_model_url(url):
+    parts = urlsplit(url)
+    return bool(re.fullmatch(r'/tour/models/[^/]+\.html', parts.path)
+                or (parts.path == '/tour/sets.php' and parse_qs(parts.query).get('id')))
+
+
+def is_collection(name, url):
+    return clean(name).casefold() == 'duos' or urlsplit(url).path.casefold().endswith('/duos.html')
 
 
 def meta(root, property_name):
@@ -183,12 +199,14 @@ def description(node):
 
 def performer(url):
     url = canonical(url)
-    if not re.fullmatch(r'/tour/models/[^/]+\.html', urlsplit(url).path) or url.endswith('/models.html'):
+    if not is_model_url(url) or url.endswith('/models.html') or is_collection('', url):
         raise ValueError('Use an individual model profile URL')
     root = fetch(url)
     heading = root.first(lambda n: n.has_class('title_bar_hilite'))
     if heading is None or not clean(heading.text()):
         raise ValueError('Model name was not found on this page')
+    if is_collection(heading.text(), url):
+        raise ValueError('Duos is a collection, not an individual performer')
     result = {'name': clean(heading.text()), 'urls': [url], 'gender': 'Male',
               'disambiguation': STUDIO}
     bio = description(root.first(lambda n: n.has_class('model_bio')))
@@ -227,12 +245,14 @@ def scene(url):
                 log('Invalid publication date; leaving it empty')
     # Scope to the main Featuring block; later blocks belong to recommendations.
     cast = root.first(lambda n: n.has_class('update_models'))
+    base_node = root.first(lambda n: n.tag == 'base' and n.attrs.get('href'))
+    document_base = urljoin(url, base_node.attrs['href']) if base_node else url
     performers, seen = [], set()
     if cast:
         for anchor in cast.all(lambda n: n.tag == 'a' and n.attrs.get('href')):
             try:
-                model_url = canonical(anchor.attrs['href'])
-                if not re.fullmatch(r'/tour/models/[^/]+\.html', urlsplit(model_url).path):
+                model_url = canonical(urljoin(document_base, anchor.attrs['href']))
+                if not is_model_url(model_url) or is_collection(anchor.text(), model_url):
                     continue
                 if model_url in seen:
                     continue

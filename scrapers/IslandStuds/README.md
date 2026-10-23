@@ -16,13 +16,15 @@ Returned fields include the scene title, full description with paragraph breaks,
 
 For covers, the scraper tries Open Graph metadata first, then the actual player poster and the main scene's preview thumbnail. Invalid directory URLs and non-image responses are rejected. If all declared images fail, the other metadata remains available without a broken image URL.
 
-Performers come only from the main scene's explicit **Featuring** links. Model links on recommended scenes are excluded. Each credited performer includes the site name, profile URL, **Male** gender, **Island Studs** disambiguation, and an optional embedded portrait. A profile fetch failure preserves the credited performer's basic metadata.
+Performers come only from the main scene's explicit **Featuring** links. Both modern model URLs and older `sets.php?id=...` profile links are supported, with relative links resolved against the page's declared base URL. The **Duos** collection is excluded, as are model links on recommended scenes. Each credited performer includes the site name, profile URL, **Male** gender, **Island Studs** disambiguation, and an optional embedded portrait. A profile fetch failure preserves the credited performer's basic metadata.
 
 The displayed date is parsed as month/day/year. Dates are never inferred from a copyright year, image filename, or image expiry timestamp.
 
 ## Models and photos
 
 Individual `/tour/models/...html` URLs can be scraped directly in a performer editor. The scraper reads the model heading and the site's lazy-loaded portrait attributes. It tries the largest declared `src0_Nx` image first, then smaller versions and older `src0`/`src` attributes. Portraits are downloaded immediately and returned as embedded image data. An image error, including HTTP 403, leaves the remaining performer fields available.
+
+Legacy `/tour/sets.php?id=...` model URLs also work for direct performer scraping. Numeric IDs are preserved because they distinguish individual models. Collection pages such as `Duos.html` are not treated as performers.
 
 A biography is included only when the profile actually provides one. Ratings and review widgets are excluded; Eli Daddy's tested profile has a portrait but no biography.
 
@@ -43,6 +45,8 @@ Tested through the official Stash v0.31.1 Docker image on 2026-10-23:
 All three tests checked the title, full description, exact cover image bytes, date, studio, cast scope, model URL, gender, and disambiguation. Further tests checked Eli's direct portrait scrape, omission of a nonexistent biography, matching to an existing local studio associated with the supplied StashDB ID, and graceful handling of an HTTP 403 portrait failure.
 
 The legacy-image fix was also tested with **Logan** (`Logan_vids.html`, dated 2013-12-18). That page's Open Graph image points to a folder that returns HTTP 403; the player poster is used instead, and the model portrait is found through its legacy `src0` attribute. Both images were actually saved to scene/performer records and successfully retrieved from Stash afterward. Controlled tests checked fallback after a missing high-resolution portrait and rejection of HTML returned in place of an image. The three earlier live-scene tests were rerun successfully.
+
+The duo-credit fix was tested with **Duo - Dan & Kyle** (`Duo-DanKyle_vids.html`, dated 2011-09-07). It returned exactly **Dan** (`sets.php?id=102`) and **Kyle** (`sets.php?id=58`), with separate portraits. Duos and the recommended-scene performer Darren were excluded. Both legacy profile URLs also passed direct performer scraping, and the Logan image-saving checks and earlier scene tests were rerun.
 
 ## Manual installation
 
