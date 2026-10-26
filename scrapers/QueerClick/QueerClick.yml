@@ -1,0 +1,12 @@
+name: QueerClick (custom)
+sceneByURL:
+  - action: script
+    url:
+      - queerclick.com/qc/
+    script:
+      - python
+      - queerclick.py
+      - scene
+# Public post metadata. The Date field is QueerClick's publication date.
+# Standard library only; no login or local API configuration.
+# Last updated: 2026-10-26

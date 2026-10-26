@@ -96,6 +96,12 @@ See the [scraper instructions and Docker test results](scrapers/BeefcakeHunter/R
 
 See the [scraper instructions and Docker test results](scrapers/AllAustralianBoys/README.md).
 
+## QueerClick
+
+**QueerClick (custom)** transfers metadata from individual dated QueerClick posts: the original title, main description, canonical source URL, optional embedded article image, and the blog's publication date. It assigns a studio only from an explicit, unambiguous producer link and does not guess performers. The post date is not proof of the scene's original release date; modification timestamps are ignored. No login or local API configuration is required.
+
+See the [scraper instructions and Docker test results](scrapers/QueerClick/README.md).
+
 ## Development
 
 Scrapers live in `scrapers/`. The publishing workflow builds the source index and ZIP packages with the official [scrapers-repo-template](https://github.com/stashapp/scrapers-repo-template) build script, then deploys to GitHub Pages. Contributions to the official [CommunityScrapers](https://github.com/stashapp/CommunityScrapers) repository are reviewed separately by its maintainers.
