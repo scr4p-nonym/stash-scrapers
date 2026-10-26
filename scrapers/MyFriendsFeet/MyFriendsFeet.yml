@@ -1,0 +1,20 @@
+name: My Friends Feet (custom)
+sceneByURL:
+  - action: script
+    url:
+      - myfriendsfeet.com/scenes/
+    script:
+      - python
+      - myfriendsfeet.py
+      - scene
+performerByURL:
+  - action: script
+    url:
+      - myfriendsfeet.com/directory/
+    script:
+      - python
+      - myfriendsfeet.py
+      - performer
+# Python standard library only; no login, browser, or local API setup.
+# Affiliate tracking is removed from scene/model identity URLs.
+# Last updated: 2026-10-26

@@ -66,6 +66,12 @@ See the [scraper instructions and test results](scrapers/MyBestFriendsDad/README
 
 See the [scraper instructions and test results](scrapers/IslandStuds/README.md).
 
+## My Friends Feet
+
+**My Friends Feet (custom)** supports scene URLs and individual model-directory URLs. It returns full descriptions, embedded covers, publication dates when an exact dated listing is available, the fixed studio, and performers explicitly linked in the main scene credits. Models include Male gender, site disambiguation, and optional embedded portrait choices. Affiliate tracking is removed from identity URLs. No local API configuration is required.
+
+See the [scraper instructions and test results](scrapers/MyFriendsFeet/README.md).
+
 ## Development
 
 Scrapers live in `scrapers/`. The publishing workflow builds the source index and ZIP packages with the official [scrapers-repo-template](https://github.com/stashapp/scrapers-repo-template) build script, then deploys to GitHub Pages. Contributions to the official [CommunityScrapers](https://github.com/stashapp/CommunityScrapers) repository are reviewed separately by its maintainers.
