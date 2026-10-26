@@ -90,6 +90,12 @@ See the [scraper instructions and test results](scrapers/SlowTeasingHandJobs/REA
 
 See the [scraper instructions and Docker test results](scrapers/BeefcakeHunter/README.md).
 
+## All Australian Boys
+
+**All Australian Boys (custom)** supports individual public sex-scene/solo preview URLs and verified teaser-page URLs. It returns the main description, embedded cover, fixed studio and explicitly named model with Male gender and optional embedded portrait. Scene labels retain the exact URL identifier because the site reuses first names; model disambiguation retains that identifier too. Missing release dates stay empty. The catalog covers linked public previews; older join-only directory thumbnails are excluded.
+
+See the [scraper instructions and Docker test results](scrapers/AllAustralianBoys/README.md).
+
 ## Development
 
 Scrapers live in `scrapers/`. The publishing workflow builds the source index and ZIP packages with the official [scrapers-repo-template](https://github.com/stashapp/scrapers-repo-template) build script, then deploys to GitHub Pages. Contributions to the official [CommunityScrapers](https://github.com/stashapp/CommunityScrapers) repository are reviewed separately by its maintainers.

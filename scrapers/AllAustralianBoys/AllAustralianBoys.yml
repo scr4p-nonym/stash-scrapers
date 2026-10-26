@@ -1,0 +1,23 @@
+name: All Australian Boys (custom)
+sceneByURL:
+  - action: script
+    url:
+      - allaustralianboys.com/sex-scenes_
+      - allaustralianboys.com/solos_
+      - allaustralianboys.com/video-
+    script:
+      - python
+      - allaustralianboys.py
+      - scene
+performerByURL:
+  - action: script
+    url:
+      - allaustralianboys.com/sex-scenes_
+      - allaustralianboys.com/solos_
+    script:
+      - python
+      - allaustralianboys.py
+      - performer
+# Public metadata only. Python standard library; no login or local API setup.
+# Keeps the site's numeric model suffixes as identifiers, not guessed names.
+# Last updated: 2026-10-26
