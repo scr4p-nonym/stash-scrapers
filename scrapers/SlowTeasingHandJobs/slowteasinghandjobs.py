@@ -13,6 +13,7 @@ from urllib.request import Request, urlopen
 
 BASE = 'https://slowteasinghandjobs.com'
 STUDIO = 'Slow Teasing Hand Jobs'
+FIXED_PERFORMER = 'Richard Maturo'
 VOID = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link',
         'meta', 'param', 'source', 'track', 'wbr'}
 CACHE = Path(tempfile.gettempdir()) / 'stash-slowteasinghandjobs-v1'
@@ -403,7 +404,8 @@ def c4s_match(record):
 def scene(url):
     record = find_record(url)
     result = {'title': record['title'], 'urls': [record['url'], record['archive']],
-              'studio': {'name': STUDIO, 'urls': [BASE + '/']}}
+              'studio': {'name': STUDIO, 'urls': [BASE + '/']},
+              'performers': [{'name': FIXED_PERFORMER, 'gender': 'Male'}]}
     for key in ('date', 'details'):
         if record.get(key):
             result[key] = record[key]

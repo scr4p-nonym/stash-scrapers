@@ -36,7 +36,11 @@ Dates come only from the archive's date headings. A folder named “2008 Sets,�
 
 Parsed public metadata is cached under the container's temporary directory: current updates for one hour, archives for one day. No login cookies or images are cached. If a page temporarily fails, previously cached metadata may be reused. Cache write failures do not prevent scraping. A previously unknown URL may take longer on its first lookup; a URL absent from the public archives fails explicitly rather than receiving a guessed match.
 
-An archive page contains many scenes, so an archive URL alone cannot identify which scene you want. Paste the linked members scene URL. This scraper does not scrape Clips4Sale URLs directly or infer performers from names mentioned in titles or descriptions.
+An archive page contains many scenes, so an archive URL alone cannot identify which scene you want. Paste the linked members scene URL. This scraper does not scrape Clips4Sale URLs directly.
+
+## Fixed performer
+
+Every scene scrape includes **Richard Maturo**, with **Male** gender, as a user-requested fixed credit. This is a site-wide rule configured for this scraper rather than a claim extracted from each archive entry. Stash uses its normal name matching to link an existing Richard Maturo record; otherwise the scrape dialog can create one. No profile URL, StashDB identity, or local performer ID is invented. Additional performers are not inferred from titles or descriptions.
 
 ## Studio
 
@@ -54,7 +58,7 @@ Tested on 2026-10-26 through an isolated official Stash v0.31.1 Docker container
 | Buff Straight Boy Forced to Cum Again | Archive 1 | Empty: no visible date |
 | Muscular Tanner Bound and Jerked | Current updates | 2026-10-23 |
 
-Checks covered exact scene links, original descriptions and dates, image bytes, studio matching, encoded spaces, and omission of guessed performers. Luke's returned cover was checked against the public 720 × 405 Clips4Sale preview, actually saved, and retrieved from Stash.
+Checks covered exact scene links, original descriptions and dates, image bytes, studio matching, encoded spaces, and omission of guessed performers. Luke's returned cover was checked against the public 720 × 405 Clips4Sale preview, actually saved, and retrieved from Stash. The fixed Richard Maturo credit was subsequently checked through Stash for matching an existing performer and saving the scene relationship.
 
 Controlled checks covered one-page indexed lookup, cache reuse, discovery of an unindexed scene on a newly linked archive, explicit failure for an unknown URL, rejection of member-page requests before networking, title-and-description verification of Clips4Sale matches, rejection of unrelated clips, and collage fallback during a store outage.
 
