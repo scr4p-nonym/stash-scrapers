@@ -72,6 +72,12 @@ See the [scraper instructions and test results](scrapers/IslandStuds/README.md).
 
 See the [scraper instructions and test results](scrapers/MyFriendsFeet/README.md).
 
+## Film911
+
+**Film911 (custom)** supports individual scene URLs with full descriptions, embedded covers, dates, and the fixed studio. Explicit purchase links are included as additional scene URLs. Alternate title layouts are supported, and display labels are removed. Performer names are not inferred from titles or fictional characters because the inspected pages have no reliable actor-profile credits.
+
+See the [scraper instructions and test results](scrapers/Film911/README.md) for release-date handling and fallback behavior.
+
 ## Development
 
 Scrapers live in `scrapers/`. The publishing workflow builds the source index and ZIP packages with the official [scrapers-repo-template](https://github.com/stashapp/scrapers-repo-template) build script, then deploys to GitHub Pages. Contributions to the official [CommunityScrapers](https://github.com/stashapp/CommunityScrapers) repository are reviewed separately by its maintainers.

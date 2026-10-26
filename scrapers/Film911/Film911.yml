@@ -1,0 +1,12 @@
+name: Film911 (custom)
+sceneByURL:
+  - action: script
+    url:
+      - film911.net/
+    script:
+      - python
+      - film911.py
+      - scene
+# Python standard library only; no login, browser, or local API setup.
+# Adds explicit purchase links; no cast identities guessed from titles or scripts.
+# Last updated: 2026-10-26
