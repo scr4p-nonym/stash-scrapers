@@ -1,0 +1,12 @@
+name: Slow Teasing Hand Jobs (custom)
+sceneByURL:
+  - action: script
+    url:
+      - slowteasinghandjobs.com/members_sthj/
+    script:
+      - python
+      - slowteasinghandjobs.py
+      - scene
+# Standard library only. Looks up exact scene links in public archives.
+# Never requests members-only pages or needs a site login/local API setup.
+# Last updated: 2026-10-26

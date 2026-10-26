@@ -78,6 +78,12 @@ See the [scraper instructions and test results](scrapers/MyFriendsFeet/README.md
 
 See the [scraper instructions and test results](scrapers/Film911/README.md) for release-date handling and fallback behavior.
 
+## Slow Teasing Hand Jobs
+
+**Slow Teasing Hand Jobs (custom)** accepts individual members scene URLs and finds their metadata through exact links in public archives. It never requests protected scene pages. Original archive dates and descriptions are preserved; a confirmed mirror in the producer's Clips4Sale store can supply a larger public cover image. An included URL-to-archive index and temporary metadata cache keep lookups efficient, while current updates and new archive links support future scenes without credentials.
+
+See the [scraper instructions and test results](scrapers/SlowTeasingHandJobs/README.md).
+
 ## Development
 
 Scrapers live in `scrapers/`. The publishing workflow builds the source index and ZIP packages with the official [scrapers-repo-template](https://github.com/stashapp/scrapers-repo-template) build script, then deploys to GitHub Pages. Contributions to the official [CommunityScrapers](https://github.com/stashapp/CommunityScrapers) repository are reviewed separately by its maintainers.
