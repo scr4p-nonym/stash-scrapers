@@ -1,0 +1,21 @@
+name: Beefcake Hunter (custom)
+sceneByURL:
+  - action: script
+    url:
+      - beefcakehunter.com/video/
+    script:
+      - python
+      - beefcakehunter.py
+      - scene
+performerByURL:
+  - action: script
+    url:
+      - beefcakehunter.com/video-category/
+      - beefcakehunter.com/about-the-hunter
+    script:
+      - python
+      - beefcakehunter.py
+      - performer
+# Standard library only. Public metadata; no login or local API configuration.
+# Every scene includes Victor (Beefcake Hunter).
+# Last updated: 2026-10-26

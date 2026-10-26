@@ -84,6 +84,12 @@ See the [scraper instructions and test results](scrapers/Film911/README.md) for 
 
 See the [scraper instructions and test results](scrapers/SlowTeasingHandJobs/README.md).
 
+## Beefcake Hunter
+
+**Beefcake Hunter (custom)** supports individual scene URLs and public model-category URLs. It returns full public descriptions, publication dates, embedded covers, the fixed studio, and verified guest models. Every scene includes Victor with Beefcake Hunter disambiguation and Male gender. Public model cards provide an optional portrait snapshot; newer guest credits require the exact scene URL on the model's category page. No login or local API configuration is required.
+
+See the [scraper instructions and Docker test results](scrapers/BeefcakeHunter/README.md).
+
 ## Development
 
 Scrapers live in `scrapers/`. The publishing workflow builds the source index and ZIP packages with the official [scrapers-repo-template](https://github.com/stashapp/scrapers-repo-template) build script, then deploys to GitHub Pages. Contributions to the official [CommunityScrapers](https://github.com/stashapp/CommunityScrapers) repository are reviewed separately by its maintainers.
