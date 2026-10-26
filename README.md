@@ -102,6 +102,12 @@ See the [scraper instructions and Docker test results](scrapers/AllAustralianBoy
 
 See the [scraper instructions and Docker test results](scrapers/QueerClick/README.md).
 
+## WayBig
+
+**WayBig (custom)** transfers the title, main text, blog publication date, canonical URL and optional embedded still image from individual dated WayBig posts. It excludes advertising widgets, related posts and link-only promotional prompts. Studio and cast are left unassigned. The post date does not verify the scene's original release date; later modification timestamps are ignored. No login or local API configuration is required.
+
+See the [scraper instructions and Docker test results](scrapers/WayBig/README.md).
+
 ## Development
 
 Scrapers live in `scrapers/`. The publishing workflow builds the source index and ZIP packages with the official [scrapers-repo-template](https://github.com/stashapp/scrapers-repo-template) build script, then deploys to GitHub Pages. Contributions to the official [CommunityScrapers](https://github.com/stashapp/CommunityScrapers) repository are reviewed separately by its maintainers.

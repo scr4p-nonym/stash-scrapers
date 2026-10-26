@@ -1,0 +1,12 @@
+name: WayBig (custom)
+sceneByURL:
+  - action: script
+    url:
+      - waybig.com/blog/
+    script:
+      - python
+      - waybig.py
+      - scene
+# Date is the blog publication date; not a verified scene release date.
+# No studio or performer assignment. Python standard library only.
+# Last updated: 2026-10-26
