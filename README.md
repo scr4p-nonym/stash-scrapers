@@ -2,6 +2,12 @@
 
 Custom URL metadata scrapers for [Stash](https://github.com/stashapp/stash).
 
+## UK Naked Men
+
+**UK Naked Men (custom)** supports individual public tour scene and model links, including both short `refstat.php` and resolved `showgal.php` URLs. Scenes return titles, descriptions, embedded covers and the studio; models return names, Male gender, site disambiguation and portraits. Missing release dates and cast credits are not inferred. No login or local API configuration is required.
+
+See the [instructions and test results](scrapers/UKNakedMen/README.md).
+
 ## See Him Solo
 
 **See Him Solo (performers)** adds individual model profiles, published stats, social/profile URLs, Male gender, site disambiguation and embedded portraits. Missing attributes remain empty. Use the existing **MojoHost** scraper from Community (stable) for scene URLs; this companion does not overlap its scene handler. Model directory pages are for browsing, not direct performer scraping.

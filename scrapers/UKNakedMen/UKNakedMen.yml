@@ -1,0 +1,21 @@
+name: UK Naked Men (custom)
+sceneByURL:
+  - action: script
+    url:
+      - uknakedmen.com/tour/refstat.php
+      - uknakedmen.com/tour/showgal.php
+    script:
+      - python
+      - uknakedmen.py
+      - scene
+performerByURL:
+  - action: script
+    url:
+      - uknakedmen.com/tour/refstat.php
+      - uknakedmen.com/tour/showgal.php
+    script:
+      - python
+      - uknakedmen.py
+      - performer
+# Individual public tour pages only; listing/directory URLs are for browsing.
+# Python standard library. No login or local API setup.
