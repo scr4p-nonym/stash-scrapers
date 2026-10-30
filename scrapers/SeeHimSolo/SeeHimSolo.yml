@@ -1,0 +1,11 @@
+name: See Him Solo (performers)
+performerByURL:
+  - action: script
+    url:
+      - seehimsolo.com/models/
+    script:
+      - python
+      - seehimsolo.py
+      - performer
+# Companion to the Community MojoHost scene scraper; no scene URL overlap.
+# Individual profiles only. Python standard library; no API/login setup.

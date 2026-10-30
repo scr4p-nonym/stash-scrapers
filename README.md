@@ -2,6 +2,12 @@
 
 Custom URL metadata scrapers for [Stash](https://github.com/stashapp/stash).
 
+## See Him Solo
+
+**See Him Solo (performers)** adds individual model profiles, published stats, social/profile URLs, Male gender, site disambiguation and embedded portraits. Missing attributes remain empty. Use the existing **MojoHost** scraper from Community (stable) for scene URLs; this companion does not overlap its scene handler. Model directory pages are for browsing, not direct performer scraping.
+
+See the [instructions and test results](scrapers/SeeHimSolo/README.md), including the re-release date distinction on the supplied Nade Nasty scene.
+
 ## Install
 
 In Stash, open **Settings → Metadata Providers**, add a scraper source named **scr4p-nonym** with this URL, and install the desired scrapers from that source:
