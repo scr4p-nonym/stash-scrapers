@@ -28,7 +28,9 @@ This distinction matters for migrated posts. **Brax falls in love** advertises *
 
 ## Performers and studio
 
-The inspected site's `/model/` page is a recruitment form, not an actor directory. The tested scenes do not provide reliable individual performer-profile credits. Performer scraping is therefore omitted. WordPress's `Person` entry identifies the site administrator and is never returned as cast. Names are not guessed from titles, descriptions, fictional character names, or image filenames.
+Every scene includes the requested fixed cast credit **Dr. Smith**, with gender **Male** and his [StashDB performer URL](https://stashdb.org/performers/01a079ed-366f-7a69-b44e-b98c7e691377). This is a user-configured credit, not a name inferred from the page. A StashDB URL alone does not guarantee matching an existing local performer; review Stash's proposed match before saving.
+
+The inspected site's `/model/` page is a recruitment form, not an actor directory. The tested scenes do not provide reliable individual performer-profile credits. Individual performer-page scraping is therefore omitted. WordPress's `Person` entry identifies the site administrator and is never used as a cast source. Other names are not guessed from titles, descriptions, fictional character names, or image filenames.
 
 The scraper returns the studio name **Film911** and its official website. Import or link the [Film911 studio on StashDB](https://stashdb.org/studios/2be1f8ca-40b9-4443-94b3-700ca9a4cf14) once on your local studio record. Returning the studio name does not create its external StashDB association.
 
@@ -44,7 +46,9 @@ Tested on 2026-10-26 through an isolated official Stash v0.31.1 Docker container
 | Jordan King with Mr. Latcher 2 | 2026-09-16 |
 | Damien Kyle asks for to much | 2026-10-22 |
 
-All five tests checked titles, complete descriptions, exact declared poster bytes, purchase URLs, clean identity URLs, studio matching, and omission of guessed cast. Brax's scene cover was actually saved and retrieved from Stash.
+All five original tests checked titles, complete descriptions, exact declared poster bytes, purchase URLs, clean identity URLs, studio matching, and omission of guessed cast. Brax's scene cover was actually saved and retrieved from Stash.
+
+The 2026-11-01 update verified the fixed Dr. Smith credit on all five cached scene layouts, including when images are unavailable. A fresh live scrape through an isolated Stash v0.31.1 container checked his name, Male gender, exact StashDB URL, matching an existing local Dr. Smith, and saving the scene with that performer and its cover. The temporary container was removed after testing.
 
 Controlled tests also checked alternate heading/content layouts, structured-title fallback, status-label cleanup, preserved list formatting, generic purchase buttons with query parameters, missing purchase links, publication-versus-modification dates, image fallbacks, malformed image paths, and rejection of recruitment pages and invalid or partial release announcements.
 

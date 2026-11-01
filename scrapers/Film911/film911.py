@@ -11,6 +11,8 @@ from urllib.request import Request, urlopen
 
 BASE = 'https://film911.net'
 STUDIO = 'Film911'
+FIXED_PERFORMER = {'name': 'Dr. Smith', 'gender': 'Male',
+                   'urls': ['https://stashdb.org/performers/01a079ed-366f-7a69-b44e-b98c7e691377']}
 VOID = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link',
         'meta', 'param', 'source', 'track', 'wbr'}
 
@@ -279,7 +281,8 @@ def scene(url):
     content = scope.first(lambda n: n.has_class('vsingle-desc')) or scope.first(
         lambda n: n.has_class('entry-content') or n.has_class('post-content'))
     result = {'title': title, 'urls': [url] + purchase_links(scope, url),
-              'studio': {'name': STUDIO, 'urls': [BASE + '/']}}
+              'studio': {'name': STUDIO, 'urls': [BASE + '/']},
+              'performers': [dict(FIXED_PERFORMER)]}
     if content:
         text = description(content)
         if text:

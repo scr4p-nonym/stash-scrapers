@@ -86,7 +86,7 @@ See the [scraper instructions and test results](scrapers/MyFriendsFeet/README.md
 
 ## Film911
 
-**Film911 (custom)** supports individual scene URLs with full descriptions, embedded covers, dates, and the fixed studio. Explicit purchase links are included as additional scene URLs. Alternate title layouts are supported, and display labels are removed. Performer names are not inferred from titles or fictional characters because the inspected pages have no reliable actor-profile credits.
+**Film911 (custom)** supports individual scene URLs with full descriptions, embedded covers, dates, and the fixed studio. Every scene includes Dr. Smith as a user-requested fixed performer credit, with Male gender and his StashDB URL. Explicit purchase links are included as additional scene URLs. Alternate title layouts are supported, and display labels are removed. Other performer names are not inferred from titles or fictional characters because the inspected pages have no reliable actor-profile credits.
 
 See the [scraper instructions and test results](scrapers/Film911/README.md) for release-date handling and fallback behavior.
 
