@@ -1,0 +1,13 @@
+name: CMNM.net (custom)
+sceneByURL:
+  - action: script
+    url:
+      - members.cmnm.net/membersarea/men/
+      - members.cmnm.net/membersarea/oandccms/episode-player.php
+    script:
+      - python
+      - cmnm.py
+      - scene
+# Standard library only. Requires a private CMNM member login configuration.
+# Credentials and member metadata are never included in the public package.
+# Last updated: 2026-11-04

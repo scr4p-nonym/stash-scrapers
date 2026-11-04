@@ -120,6 +120,12 @@ See the [scraper instructions and Docker test results](scrapers/QueerClick/READM
 
 See the [scraper instructions and Docker test results](scrapers/WayBig/README.md).
 
+## CMNM.net
+
+**CMNM.net (custom)** supports individual member scene parts from the archive and Now Showing player. It returns full titles where supplied, each part's own description and embedded cover, the fixed CMNM.net studio, and a distinct scene selector. A valid membership and a private login file outside the scraper directory are required. Expiry dates are excluded from release dates, and story subjects are not guessed as actor identities. No member catalog data or credentials are distributed with the package.
+
+See the [scraper instructions and Docker test results](scrapers/CMNM/README.md).
+
 ## Development
 
 Scrapers live in `scrapers/`. The publishing workflow builds the source index and ZIP packages with the official [scrapers-repo-template](https://github.com/stashapp/scrapers-repo-template) build script, then deploys to GitHub Pages. Contributions to the official [CommunityScrapers](https://github.com/stashapp/CommunityScrapers) repository are reviewed separately by its maintainers.
