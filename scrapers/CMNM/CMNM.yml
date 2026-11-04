@@ -9,5 +9,14 @@ sceneByURL:
       - cmnm.py
       - scene
 # Standard library only. Requires a private CMNM member login configuration.
+performerByURL:
+  - action: script
+    url:
+      - members.cmnm.net/membersarea/fullinfo.php
+    script:
+      - python
+      - cmnm.py
+      - performer
+# Clear individual subjects can be created from the member archive even when fullinfo.php is blank.
 # Credentials and member metadata are never included in the public package.
 # Last updated: 2026-11-04

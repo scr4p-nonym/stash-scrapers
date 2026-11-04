@@ -1,6 +1,6 @@
 # CMNM.net member scraper
 
-Supports individual CMNM.net scene parts from both the older archive and the current Now Showing player. Each part remains a separate scene. Uses Python's standard library only.
+Supports individual CMNM.net scene parts from both the older archive and the current Now Showing player, plus clear individual subject references from the archive. Each part remains a separate scene. Uses Python's standard library only.
 
 Install **CMNM.net (custom)** from the existing source:
 
@@ -43,14 +43,32 @@ Tracking parameters are removed. The alphanumeric session identities explicitly 
 ## Returned metadata
 
 - Full scene title where supplied, with an explicit part number. Older entries that only name the subject use `Name — Part N`. Now Showing titles take priority when available for the same archived part.
-- The chosen part's complete description, excluding download controls, gallery captions and site navigation.
+- The chosen part's complete description, excluding download controls, gallery captions and site navigation. Optional year estimates append a clearly labeled source note.
 - Studio **CMNM.net**, with its official site URL. The corresponding [StashDB studio](https://stashdb.org/studios/676de83f-55d2-4025-9602-6f7c3c1d93df) should be linked to your local studio record through StashDB as usual.
 - Canonical scene/scraper-selector URL.
 - The exact part's declared video poster, embedded for reliable saving. If unavailable, the first explicitly linked full-size gallery still is tried. Image failures do not discard the other metadata.
 
-The inspected listings and parts supply no reliable release dates. Dates labeled **UNTIL** or **AVAILABLE UNTIL** are access-expiry dates and are never returned as release dates. File dates and image paths are not used to invent dates.
+The inspected listings and parts supply no reliable release dates. Dates labeled **UNTIL** or **AVAILABLE UNTIL** are access-expiry dates and are never returned as release dates. Server Last-Modified headers, local file timestamps and image paths are not used to invent dates.
 
-The inspected `fullinfo.php` links return blank pages and identify subjects/stories rather than a usable cast directory. Performer scraping is omitted; fictional character names and names in descriptions are not treated as actor identities.
+### Optional estimated years
+
+To use available JPEG EXIF dates, create `cmnm-options.json` beside the private credential file:
+
+```json
+{"image_year_mode":"date"}
+```
+
+Modes are `none` (default), `notes` (append image-year evidence to the description only), and `date` (also return the estimated year in Date). The helper prefers EXIF DateTimeOriginal, falling back to the image's EXIF editing DateTime. Both remain explicitly unverified as release dates. Editing timestamps can be much later than the original filming or release; the note identifies the actual tag and timestamp used. Images without usable EXIF leave Date empty.
+
+Date estimates use **year precision**, not an invented January 1 release date. This requires a Stash version that supports year-only dates; saving and reading back that precision was verified in the official test container. The estimate comes from the selected scene cover, before any performer portrait is downloaded.
+
+### Performer creation despite blank profile pages
+
+The inspected `fullinfo.php` pages return blank responses, but their identifiers still link to named archive cards. Direct performer scraping looks up the selected card instead of relying on the blank page. Clear individual site-subject names can therefore return **name, Male gender, CMNM.net disambiguation, source reference URL**, and an optional declared archive portrait. Missing biographical facts remain empty.
+
+Scene scraping includes an individual subject only when the card has a clear person-like name and that name is not duplicated across archived session identifiers. Group/story labels are omitted. Names in story descriptions are never used to add other actors, so this is not a complete cast list or a StashDB identity claim. Direct scraping of an explicitly selected individual reference can still work when the name is repeated.
+
+Stash may match common first names to existing local performers. Review its proposed match; disambiguation and the reference URL alone do not guarantee a correct match. The scraper does not query your local Stash API.
 
 ## Catalog scope
 
@@ -62,6 +80,8 @@ The catalog contains factual titles and source links, not credentials, cookies, 
 
 Tested on 4 November 2026 in an isolated official Stash Docker container on the user's NAS. The test covers all three Todd archive parts, two distinct Jealous Footballer parts, a weekly bonus part, and an explicitly labeled AI-section part. It verifies separate titles and descriptions, fixed studio matching, omitted expiry dates and guessed cast, canonical URLs, and saving/retrieving every returned cover through Stash.
 
-Controlled checks cover optional image failure and rejection of profile, listing, bare-player, external, malformed and ambiguous URLs. Private credentials are mounted read-only in the test container and are absent from the public package.
+The follow-up tests created Todd from his archive reference with a saved portrait, then verified the nested subject credit and native matching to that local performer. Todd Part 1 and Jealous Footballer Part 4 returned image-year estimates with explicit EXIF source notes. Both were saved and returned with year-only precision; the database precision was also checked. Story/group names were rejected as performers.
+
+Controlled checks cover optional image failure and rejection of unsupported, listing, bare-player, external, malformed and ambiguous URLs. Private credentials and options are mounted read-only in the test containers and are absent from the public package.
 
 AGPL-3.0, consistent with the repository license.

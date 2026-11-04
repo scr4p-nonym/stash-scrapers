@@ -1,11 +1,13 @@
 """CMNM.net member metadata. Standard library only. AGPL-3.0."""
 import base64
+from datetime import datetime
 from html.parser import HTMLParser
 from http.cookiejar import CookieJar
 import json
 import os
 from pathlib import Path
 import re
+import struct
 import sys
 import time
 from urllib.parse import parse_qs, urlencode, urljoin, urlsplit, urlunsplit
@@ -66,6 +68,116 @@ def text_blocks(node):
 
 def credentials_path():
     return Path(os.environ.get('CMNM_CREDENTIALS_FILE', str(Path.home()/'.stash'/'cmnm-credentials.json')))
+
+def options():
+    try:return json.loads((credentials_path().parent/'cmnm-options.json').read_text(encoding='utf-8'))
+    except (OSError,ValueError):return {}
+
+def image_dates(raw):
+    """Read actual JPEG EXIF date tags; never use server/file modification times."""
+    if not raw.startswith(b'\xff\xd8'):return {}
+    pos=2;data=None
+    while pos+4<=len(raw) and raw[pos]==255:
+        marker=raw[pos+1];pos+=2
+        if marker in {0xda,0xd9}:break
+        if marker==1 or 0xd0<=marker<=0xd7:continue
+        length=int.from_bytes(raw[pos:pos+2],'big')
+        if length<2 or pos+length>len(raw):break
+        block=raw[pos+2:pos+length]
+        if marker==0xe1 and block.startswith(b'Exif\x00\x00'):
+            data=block[6:];break
+        pos+=length
+    if not data or len(data)<8:return {}
+    endian='<' if data[:2]==b'II' else '>' if data[:2]==b'MM' else None
+    if not endian:return {}
+    result={};seen=set()
+    def word(offset,fmt):return struct.unpack_from(endian+fmt,data,offset)[0]
+    def read_ifd(offset):
+        if offset in seen or len(seen)>8:return
+        seen.add(offset)
+        try:
+            for i in range(min(word(offset,'H'),256)):
+                item=offset+2+12*i;tag=word(item,'H');kind=word(item+2,'H');length=word(item+4,'I');value=word(item+8,'I')
+                if tag==0x8769:read_ifd(value)
+                elif tag in {0x0132,0x9003,0x9004} and kind==2 and 0<length<80:
+                    text=data[value:value+length].rstrip(b'\x00').decode('ascii',errors='replace')
+                    try:
+                        parsed=datetime.strptime(text[:19],'%Y:%m:%d %H:%M:%S')
+                        if 1980<=parsed.year<=datetime.now().year:result[tag]=text[:19]
+                    except ValueError:pass
+        except (struct.error,IndexError):pass
+    try:
+        if word(2,'H')==42:read_ifd(word(4,'I'))
+    except struct.error:pass
+    return result
+
+def add_image_year(result,dates):
+    mode=options().get('image_year_mode','none')
+    if mode not in {'notes','date'}:return
+    tag=0x9003 if dates.get(0x9003) else 0x0132 if dates.get(0x0132) else None
+    if tag is None:return
+    value=dates[tag];year=value[:4]
+    source='EXIF DateTimeOriginal' if tag==0x9003 else 'EXIF image-editing DateTime'
+    note=f'Image metadata year: {year} ({source}: {value}). This is not a verified release year.'
+    if mode=='date' and not result.get('date'):
+        result['date']=year
+        note=f'Estimated year used for Date: {year}, based on {source}: {value}. Original release year is unverified.'
+    result['details']=(result.get('details','').rstrip()+'\n\n'+note).strip()
+
+def subject_name(label):
+    label=re.sub(r'\s*[-–—:]?\s*Part\s+\d+\s*$','',clean(label),flags=re.I).strip(' :')
+    if ':' in label:label=label.rsplit(':',1)[1].strip()
+    if any(c.isdigit() for c in label) or '&' in label:return None
+    words=label.split()
+    blocked={'the','and','dad','daddy','lad','lads','caught','wanking','prison','jail','break','debt','collectors',
+             'ink','squad','footballer','bodybuilder','sale','security','club','rugby','secret','exposure','unknown',
+             'guest','staff','soldier','worker','bouncer','cock','naked','catholic','fraudster'}
+    if not 1<=len(words)<=2 or any(w.casefold().strip(".'’") in blocked for w in words):return None
+    if not all(re.fullmatch(r"[^\W\d_]+(?:[-'’][^\W\d_]+)*\.?",w) for w in words):return None
+    return label
+
+def subject_index(client):
+    path=credentials_path().parent/'cmnm-cache'/'subject-index.json'
+    try:
+        if time.time()-path.stat().st_mtime<21600:return json.loads(path.read_text(encoding='utf-8'))
+    except (OSError,ValueError):pass
+    root=client.page(MEMBERS+'archive.php');records={};names={}
+    for card in root.all(lambda n:n.has_class('allmen-info')):
+        heading=card.first(lambda n:n.has_class('allmen-info-name'))
+        if not heading:continue
+        value=parse_qs(urlsplit(urljoin(MEMBERS,heading.attrs.get('href',''))).query).get('nm',[''])[0]
+        if not value.isdecimal():continue
+        name=subject_name(heading.text())
+        if not name:continue
+        image=card.first(lambda n:n.tag=='img' and n.attrs.get('src'))
+        records[value]={'name':name,'url':MEMBERS+'fullinfo.php?'+urlencode({'nm':str(int(value))}),
+                        'image':urljoin(MEMBERS,image.attrs['src']) if image else ''}
+        names[name.casefold()]=names.get(name.casefold(),0)+1
+    for row in records.values():row['ambiguous']=names[row['name'].casefold()]>1
+    try:
+        path.parent.mkdir(mode=0o700,exist_ok=True)
+        fd=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600)
+        with os.fdopen(fd,'w',encoding='utf-8') as handle:json.dump(records,handle)
+    except OSError:pass
+    return records
+
+def subject_performer(record,client,with_image=True):
+    result={'name':record['name'],'gender':'Male','disambiguation':STUDIO,'urls':[record['url']]}
+    if with_image and record.get('image'):
+        try:result['images']=[client.image(record['image'],MEMBERS+'archive.php')]
+        except Exception:pass
+    return result
+
+def performer(url,client=None):
+    p=urlsplit(url)
+    if p.hostname!='members.cmnm.net' or p.scheme not in {'http','https'} or p.path!='/membersarea/fullinfo.php':
+        raise ValueError('Expected an individual CMNM subject reference URL')
+    values=parse_qs(p.query).get('nm',[])
+    if len(values)!=1 or not values[0].isdecimal():raise ValueError('Expected one CMNM subject identifier')
+    client=client or Client()
+    record=subject_index(client).get(str(int(values[0])))
+    if not record:raise ValueError('This entry is a story/group or has no clear individual subject name')
+    return subject_performer(record,client)
 
 def load_credentials():
     try:
@@ -230,9 +342,18 @@ def scene(url,client=None):
     for candidate in cover_candidates(root,page_url):
         try:
             result['image']=client.image(candidate,url)
+            add_image_year(result,getattr(client,'last_image_dates',{}))
             break
         except Exception:
             print('CMNM.net: optional scene image unavailable; trying the declared fallback',file=sys.stderr)
+    session=(modern_identity(parse_qs(urlsplit(url).query)['partToPlay'][0])[0]
+             if urlsplit(url).path==urlsplit(PLAYER).path else str(old_identity(url)[0]))
+    try:
+        subject=subject_index(client).get(session)
+        if subject and not subject['ambiguous']:result['performers']=[subject_performer(subject,client)]
+    except Exception:
+        # A missing subject reference must not discard scene metadata.
+        pass
     return result
 
 class RestrictedRedirect(HTTPRedirectHandler):
@@ -248,6 +369,7 @@ class Client:
         self.cookies = CookieJar()
         self.opener = build_opener(HTTPCookieProcessor(self.cookies), RestrictedRedirect())
         self.authenticated = False
+        self.last_image_dates = {}
 
     def raw(self, url, fields=None, limit=4*1024*1024):
         parts = urlsplit(url)
@@ -302,6 +424,7 @@ class Client:
             with opener.open(Request(url,headers={'Referer':referer,'User-Agent':'Mozilla/5.0'}),timeout=20) as response:
                 data=response.read(8*1024*1024+1)
         if len(data)>8*1024*1024: raise ValueError('Image exceeds download limit')
+        self.last_image_dates=image_dates(data)
         if data.startswith(b'\xff\xd8\xff'): mime='image/jpeg'
         elif data.startswith(b'\x89PNG\r\n\x1a\n'): mime='image/png'
         elif data[:6] in {b'GIF87a',b'GIF89a'}: mime='image/gif'
@@ -312,8 +435,9 @@ class Client:
 def main():
     try:
         data=json.load(sys.stdin)
-        if len(sys.argv)<2 or sys.argv[1]!='scene': raise ValueError('Unsupported CMNM action')
-        print(json.dumps(scene(data['url']),ensure_ascii=True))
+        if len(sys.argv)<2 or sys.argv[1] not in {'scene','performer'}: raise ValueError('Unsupported CMNM action')
+        result=scene(data['url']) if sys.argv[1]=='scene' else performer(data['url'])
+        print(json.dumps(result,ensure_ascii=True))
     except Exception as error:
         # Exceptions must never contain request bodies, passwords, cookies or config data.
         print('CMNM.net: '+str(error),file=sys.stderr)
