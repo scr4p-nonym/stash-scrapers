@@ -54,7 +54,7 @@ The inspected `fullinfo.php` links return blank pages and identify subjects/stor
 
 ## Catalog scope
 
-The 4 November 2026 private catalog snapshot contains **283 unique parts**: 262 parts from 78 archived sessions plus 21 additional Now Showing parts. The 59 archive links also repeated on Now Showing are deduplicated. Two entries explicitly shown in the site's AI section are included. Each part is separately searchable; expiry dates and unlinked or unavailable parts are excluded.
+The 4 November 2026 private catalog snapshot contains **283 unique parts**: 262 parts from 78 archived sessions plus 21 additional Now Showing parts. The 59 archive links also repeated on Now Showing are deduplicated. Two entries explicitly shown in the site's AI section are included. Each part is separately searchable. The snapshot covers explicitly linked parts; individual availability of every archived part has not been checked. Expiry dates are excluded, and unlinked historical material may be absent.
 
 The catalog contains factual titles and source links, not credentials, cookies, signed media-download links, or the member-only descriptions and galleries. Catalog metadata and authenticated page caches are not distributed with this scraper package. Continuous catalog hosting does not schedule refreshes.
 
