@@ -62,6 +62,8 @@ Modes are `none` (default), `notes` (append image-year evidence to the descripti
 
 Date estimates use **year precision**, not an invented January 1 release date. This requires a Stash version that supports year-only dates; saving and reading back that precision was verified in the official test container. The estimate comes from the selected scene cover, before any performer portrait is downloaded.
 
+When Date contains only a year, the scene also returns the **Missing Date** tag. Stash matches it to the existing tag by name; no installation-specific tag ID is embedded in this package. The tag marks the missing full release date, while the description retains the estimate's provenance. A full date is not given this tag by the year-estimate helper.
+
 ### Performer creation despite blank profile pages
 
 The inspected `fullinfo.php` pages return blank responses, but their identifiers still link to named archive cards. Direct performer scraping looks up the selected card instead of relying on the blank page. Clear individual site-subject names can therefore return **name, Male gender, CMNM.net disambiguation, source reference URL**, and an optional declared archive portrait. Missing biographical facts remain empty.

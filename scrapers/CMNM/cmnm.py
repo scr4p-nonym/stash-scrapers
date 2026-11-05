@@ -122,6 +122,10 @@ def add_image_year(result,dates):
     if mode=='date' and not result.get('date'):
         result['date']=year
         note=f'Estimated year used for Date: {year}, based on {source}: {value}. Original release year is unverified.'
+    if re.fullmatch(r'\d{4}',result.get('date','')):
+        tags=result.setdefault('tags',[])
+        if not any(t.get('name')=='Missing Date' for t in tags):
+            tags.append({'name':'Missing Date'})
     result['details']=(result.get('details','').rstrip()+'\n\n'+note).strip()
 
 def subject_name(label):
