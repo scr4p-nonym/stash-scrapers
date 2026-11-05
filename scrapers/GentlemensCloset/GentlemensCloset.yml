@@ -1,0 +1,19 @@
+name: Gentlemen's Closet (custom)
+sceneByURL:
+  - action: script
+    url:
+      - gentlemenscloset.com/videos/
+    script:
+      - python
+      - gentlemenscloset.py
+      - scene
+performerByURL:
+  - action: script
+    url:
+      - gentlemenscloset.com/models/
+    script:
+      - python
+      - gentlemenscloset.py
+      - performer
+# Standard library only. Public metadata; no login or local API configuration.
+# Last updated: 2026-11-05

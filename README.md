@@ -2,6 +2,18 @@
 
 Custom URL metadata scrapers for [Stash](https://github.com/stashapp/stash).
 
+## Gentlemen's Closet
+
+**Gentlemen's Closet (custom)** supports public individual video and model URLs. Scenes return the exact title, source publication date when supplied, declared cover, fixed studio, and explicitly credited model names and profile URLs. Model scraping returns published gender and optional identity-consistent portraits. The helper omits a source portrait when its named filename cannot be reconciled with the requested profile. Current-site publication dates are not independently verified original release dates. Standard library only; no login or local API configuration.
+
+See the [scope and verification](scrapers/GentlemensCloset/README.md).
+
+## UCW
+
+**UCW (public archive)** initially covers 250 public Underground Wrestler product identities captured before the store began returning HTTP 429. It returns exact titles, declared match codes, covers, and cast tags confirmed against the public wrestler roster. It uses the bundled factual snapshot and makes no repeated store requests. Products outside this partial snapshot fail explicitly. Original release dates and product descriptions are not invented from store import timestamps or generic labels.
+
+See the [coverage and verification](scrapers/UCW/README.md). No login or local API configuration is needed.
+
 ## UK Naked Men
 
 **UK Naked Men (custom)** supports individual public tour scene and model links, including both short `refstat.php` and resolved `showgal.php` URLs. Scenes return titles, descriptions, embedded covers and the studio; models return names, Male gender, site disambiguation and portraits. Missing release dates and cast credits are not inferred. No login or local API configuration is required.

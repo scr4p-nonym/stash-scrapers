@@ -1,0 +1,11 @@
+name: UCW (public archive)
+sceneByURL:
+  - action: script
+    url:
+      - undergroundwrestler.com/products/
+    script:
+      - python
+      - ucw.py
+# Standard library only. Initial partial public snapshot; see README.
+# No login or local API configuration. No video requests.
+# Last updated: 2026-11-05
