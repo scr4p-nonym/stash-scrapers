@@ -58,11 +58,11 @@ To use available JPEG EXIF dates, create `cmnm-options.json` beside the private 
 {"image_year_mode":"date"}
 ```
 
-Modes are `none` (default), `notes` (append image-year evidence to the description only), and `date` (also return the estimated year in Date). The helper prefers EXIF DateTimeOriginal, falling back to the image's EXIF editing DateTime. Both remain explicitly unverified as release dates. Editing timestamps can be much later than the original filming or release; the note identifies the actual tag and timestamp used. Images without usable EXIF leave Date empty.
+Modes are `none` (default) and `date` (return the estimated year in Date). The legacy `notes` mode is accepted but no longer adds description text or an estimated Date. The helper prefers EXIF DateTimeOriginal, falling back to the image's EXIF editing DateTime. These are unverified release-year estimates; editing timestamps can be much later than the original filming or release. Images without usable EXIF leave Date empty. The scraper never appends date-source notes to the description.
 
 Date estimates use **year precision**, not an invented January 1 release date. This requires a Stash version that supports year-only dates; saving and reading back that precision was verified in the official test container. The estimate comes from the selected scene cover, before any performer portrait is downloaded.
 
-When Date contains only a year, the scene also returns the **Missing Date** tag. Stash matches it to the existing tag by name; no installation-specific tag ID is embedded in this package. The tag marks the missing full release date, while the description retains the estimate's provenance. A full date is not given this tag by the year-estimate helper.
+When Date contains only a year, the scene also returns the **Missing Date** tag. Stash matches it to the existing tag by name; no installation-specific tag ID is embedded in this package. The tag marks the missing full release date without adding a description note. A full date is not given this tag by the year-estimate helper.
 
 ### Performer creation despite blank profile pages
 
@@ -82,7 +82,7 @@ The catalog contains factual titles and source links, not credentials, cookies, 
 
 Tested on 4 November 2026 in an isolated official Stash Docker container on the user's NAS. The test covers all three Todd archive parts, two distinct Jealous Footballer parts, a weekly bonus part, and an explicitly labeled AI-section part. It verifies separate titles and descriptions, fixed studio matching, omitted expiry dates and guessed cast, canonical URLs, and saving/retrieving every returned cover through Stash.
 
-The follow-up tests created Todd from his archive reference with a saved portrait, then verified the nested subject credit and native matching to that local performer. Todd Part 1 and Jealous Footballer Part 4 returned image-year estimates with explicit EXIF source notes. Both were saved and returned with year-only precision; the database precision was also checked. Story/group names were rejected as performers.
+The follow-up tests created Todd from his archive reference with a saved portrait, then verified the nested subject credit and native matching to that local performer. Todd Part 1 and Jealous Footballer Part 4 returned image-year estimates. Both were saved and returned with year-only precision; the database precision was also checked. Story/group names were rejected as performers. Checks for the 6 November update verify that date-source notes are omitted, descriptions are preserved, and year-only estimates still return the Missing Date tag.
 
 Controlled checks cover optional image failure and rejection of unsupported, listing, bare-player, external, malformed and ambiguous URLs. Private credentials and options are mounted read-only in the test containers and are absent from the public package.
 

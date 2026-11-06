@@ -117,16 +117,12 @@ def add_image_year(result,dates):
     tag=0x9003 if dates.get(0x9003) else 0x0132 if dates.get(0x0132) else None
     if tag is None:return
     value=dates[tag];year=value[:4]
-    source='EXIF DateTimeOriginal' if tag==0x9003 else 'EXIF image-editing DateTime'
-    note=f'Image metadata year: {year} ({source}: {value}). This is not a verified release year.'
     if mode=='date' and not result.get('date'):
         result['date']=year
-        note=f'Estimated year used for Date: {year}, based on {source}: {value}. Original release year is unverified.'
     if re.fullmatch(r'\d{4}',result.get('date','')):
         tags=result.setdefault('tags',[])
         if not any(t.get('name')=='Missing Date' for t in tags):
             tags.append({'name':'Missing Date'})
-    result['details']=(result.get('details','').rstrip()+'\n\n'+note).strip()
 
 def subject_name(label):
     label=re.sub(r'\s*[-–—:]?\s*Part\s+\d+\s*$','',clean(label),flags=re.I).strip(' :')
