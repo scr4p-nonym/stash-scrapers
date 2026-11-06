@@ -1,0 +1,20 @@
+name: BG East (custom)
+sceneByURL:
+  - action: script
+    url:
+      - bgeast.com/catalog.php?
+    script:
+      - python
+      - bgeast.py
+      - scene
+performerByURL:
+  - action: script
+    url:
+      - bgeast.com/profiles/index.php?
+    script:
+      - python
+      - bgeast.py
+      - performer
+# Standard library only. Individual matches require both pid and match.
+# Private 21+ / entry confirmation configuration is described in README.md.
+# Last updated: 2026-11-06

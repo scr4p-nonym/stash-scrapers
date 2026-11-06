@@ -1,0 +1,19 @@
+name: Bentley Race (custom)
+sceneByURL:
+  - action: script
+    url:
+      - bentleyrace.com/
+    script:
+      - python
+      - bentleyrace.py
+      - scene
+performerByURL:
+  - action: script
+    url:
+      - bentleyrace.com/model/
+    script:
+      - python
+      - bentleyrace.py
+      - performer
+# Standard library only. Public metadata; no login or local API setup.
+# Last updated: 2026-11-06

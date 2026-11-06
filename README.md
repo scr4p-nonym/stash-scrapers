@@ -2,6 +2,14 @@
 
 Custom URL metadata scrapers for [Stash](https://github.com/stashapp/stash).
 
+## Bentley Race and BG East
+
+**Bentley Race (custom)** supports public video/BTS posts and model references, with the displayed publication date, description, studio, explicit cast and declared cover. See the [Bentley Race instructions](scrapers/BentleyRace/README.md).
+
+**BG East (custom)** supports individual match URLs containing both `pid` and `match`, plus wrestler profiles. It returns the selected match's description, studio, cast and action still. Missing release dates stay blank and return the **Missing Date** tag, without description notes. Its private entry configuration requires the user's 21+ and cookie/privacy confirmation. See the [BG East instructions](scrapers/BGEast/README.md).
+
+Both packages use only Python's standard library and need no local Stash API setup.
+
 ## Gentlemen's Closet
 
 **Gentlemen's Closet (custom)** supports public individual video and model URLs. Scenes return the exact title, source publication date when supplied, declared cover, fixed studio, and explicitly credited model names and profile URLs. Model scraping returns published gender and optional identity-consistent portraits. The helper omits a source portrait when its named filename cannot be reconciled with the requested profile. Current-site publication dates are not independently verified original release dates. Standard library only; no login or local API configuration.
