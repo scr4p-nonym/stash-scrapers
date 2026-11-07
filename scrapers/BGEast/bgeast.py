@@ -10,16 +10,33 @@ from public_html import Client,Document,clean,text_blocks
 BASE='https://www.bgeast.com'
 HOSTS={'www.bgeast.com','bgeast.com'}
 STUDIO='BG East'
+PROFILE_PATH = '/profiles/index.php'
+DIRECTORY_URL = BASE + PROFILE_PATH + '?offset=1'
+
+# BG East lists these seven products as new in Catalog 97. A January 2013
+# contemporary account identifies that catalog as the latest release. The
+# README records both sources. Only the year is supported by that evidence.
+RELEASE_YEARS = dict.fromkeys(('1425', '1426', '1427', '1428', '1429', '1430', '1431'), '2013')
 
 def canonical(value,kind='scene'):
     p=urlsplit(value);q=parse_qs(p.query)
     if p.scheme not in {'http','https'} or p.hostname not in HOSTS or p.username or p.password:
         raise ValueError('Expected a BG East public URL')
-    if kind=='performer':
-        values=q.get('wrestler',[])
-        if p.path!='/profiles/index.php' or len(values)!=1 or not clean(values[0]) or len(values[0])>100:
+    if kind == 'directory':
+        if p.path == PROFILE_PATH and q == {'offset': ['1']}:
+            return DIRECTORY_URL
+        raise ValueError('Expected the BG East wrestler directory')
+    if kind == 'performer':
+        if p.path != PROFILE_PATH:
             raise ValueError('Expected an individual wrestler profile URL')
-        return BASE+'/profiles/index.php?'+urlencode({'wrestler':clean(values[0])})
+        profile_query = parse_qs(p.query, keep_blank_values=True)
+        ids = profile_query.get('wr_id', [])
+        names = profile_query.get('wrestler', [])
+        if len(ids) == 1 and re.fullmatch(r'[1-9][0-9]*', ids[0]) and not names:
+            return BASE + PROFILE_PATH + '?' + urlencode({'wr_id': ids[0]})
+        if len(names) == 1 and 0 < len(clean(names[0])) <= 100 and not ids:
+            return BASE + PROFILE_PATH + '?' + urlencode({'wrestler': clean(names[0])})
+        raise ValueError('Expected one wrestler name or numeric profile ID')
     if p.path!='/catalog.php' or any(len(q.get(k,[]))!=1 or not re.fullmatch(r'[1-9]\d*',q[k][0]) for k in ['pid','match']):
         raise ValueError('Use an individual match URL containing both pid and match')
     return BASE+'/catalog.php?'+urlencode({k:q[k][0] for k in ['pid','match']})
@@ -32,6 +49,12 @@ def approved_entry():
 class BGEastClient(Client):
     def __init__(self):super().__init__(HOSTS)
     def page(self,url):
+        kind = 'scene'
+        if url == DIRECTORY_URL:
+            kind = 'directory'
+        elif urlsplit(url).path == PROFILE_PATH:
+            kind = 'performer'
+        expected = canonical(url, kind)
         raw,final,encoding=self.raw(url)
         root=Document(raw.decode(encoding,errors='replace')).root
         form=root.first(lambda n:n.tag=='form' and n.attrs.get('name')=='ageagree')
@@ -44,14 +67,13 @@ class BGEastClient(Client):
             if not checkbox or p.scheme!='https' or p.hostname not in HOSTS or p.path!='/':
                 raise ValueError('BG East entry form changed; review it before continuing')
             location=parse_qs(p.query).get('location',[])
-            if len(location)!=1 or canonical(urljoin(BASE+'/',location[0]),'performer' if '/profiles/' in url else 'scene')!=url:
+            if len(location)!=1 or canonical(urljoin(BASE+'/',location[0]),kind)!=expected:
                 raise ValueError('BG East entry form targets a different page')
             raw,final,encoding=self.raw(target,data=urlencode({'agree':'on','submit':'ENTER WEBSITE'}).encode(),referer=final)
             root=Document(raw.decode(encoding,errors='replace')).root
             if root.first(lambda n:n.tag=='form' and n.attrs.get('name')=='ageagree'):
                 raise ValueError('BG East entry confirmation did not succeed')
-        expected=canonical(url,'performer' if '/profiles/' in url else 'scene')
-        if canonical(final,'performer' if '/profiles/' in url else 'scene')!=expected:
+        if canonical(final,kind)!=expected:
             raise ValueError('BG East returned a different public page')
         return root
 
@@ -69,8 +91,8 @@ def parse_scene(root,url):
     product=re.sub(r'^Purchase\s+','',clean(purchase.text())).rstrip('*').strip() if purchase else ''
     result={'title':(product+' — ' if product else '')+name,'urls':[url],
             'studio':{'name':STUDIO,'url':BASE+'/'},'tags':[{'name':'Missing Date'}]}
-    # No release date is declared on the inspected public match pages.
-    # Footer years, runtime, product numbers and image timestamps are not dates.
+    if pid in RELEASE_YEARS:
+        result['date'] = RELEASE_YEARS[pid]
     body=root.first(lambda n:n.has_class('body'))
     if body:
         subhead=body.parent.first(lambda n:n.has_class('subhead'))
@@ -82,7 +104,14 @@ def parse_scene(root,url):
         except ValueError:continue
         q=parse_qs(urlsplit(a.attrs['href']).query)
         if q.get('donotdisplay')!=[pid]:continue
-        person=parse_qs(urlsplit(target).query)['wrestler'][0]
+        names = parse_qs(urlsplit(target).query).get('wrestler', [])
+        if names:
+            person = names[0]
+        else:
+            label = re.fullmatch(r'Other (.+) Matches', clean(a.text()), re.I)
+            if not label:
+                continue
+            person = label[1]
         people[target]={'name':person,'urls':[target],'gender':'Male','disambiguation':STUDIO}
     # Older matches can explicitly name an opponent without giving him a profile.
     # Use only the match's "A vs. B" credit line, never story prose or keywords.
@@ -119,11 +148,17 @@ def parse_scene(root,url):
 
 def parse_performer(root,url):
     heading=root.first(lambda n:n.has_class('headline'))
-    expected=parse_qs(urlsplit(url).query)['wrestler'][0]
-    if not heading or clean(heading.text()).casefold()!=expected.casefold():
+    name = clean(heading.text()) if heading else ''
+    expected = parse_qs(urlsplit(url).query).get('wrestler', [])
+    if not name or (expected and name.casefold() != expected[0].casefold()):
         raise ValueError('The wrestler profile does not match the requested name')
-    result={'name':clean(heading.text()),'urls':[url],'gender':'Male','disambiguation':STUDIO}
     scope=heading.parent
+    if not expected and not scope.first(
+        lambda node: node.tag == 'a' and
+        urljoin(url, node.attrs.get('href', '')) == DIRECTORY_URL
+    ):
+        raise ValueError('The requested wrestler ID did not return a profile')
+    result={'name':name,'urls':[url],'gender':'Male','disambiguation':STUDIO}
     body=scope.first(lambda n:n.has_class('body'))
     if body:
         text=clean(body.text())
@@ -134,6 +169,33 @@ def parse_performer(root,url):
     image=scope.first(lambda n:n.tag=='img' and '/profiles/images/' in n.attrs.get('src','') and 'logo' not in n.attrs.get('src','').lower())
     return result,urljoin(url,image.attrs['src']) if image else None
 
+def fill_profile_urls(performers, client):
+    unlinked = [person for person in performers if not person.get('urls')]
+    if not unlinked:
+        return
+    try:
+        directory = client.page(DIRECTORY_URL)
+    except (OSError, ValueError):
+        return
+
+    profiles = {}
+    for menu in directory.all(
+        lambda node: node.tag == 'select' and
+        re.fullmatch(r'wrestlerjump[0-9]+', node.attrs.get('name', ''))
+    ):
+        for option in menu.all(lambda node: node.tag == 'option'):
+            name = clean(option.text()).casefold()
+            try:
+                url = canonical(urljoin(DIRECTORY_URL, option.attrs.get('value', '')), 'performer')
+            except ValueError:
+                continue
+            if name and 'wr_id' in parse_qs(urlsplit(url).query):
+                profiles.setdefault(name, set()).add(url)
+    for person in unlinked:
+        matches = profiles.get(person['name'].casefold(), set())
+        if len(matches) == 1:
+            person['urls'] = list(matches)
+
 def scrape(value,kind='scene',client=None):
     url=canonical(value,kind);client=client or BGEastClient();root=client.page(url)
     if kind=='performer':
@@ -143,6 +205,7 @@ def scrape(value,kind='scene',client=None):
             except Exception:pass
         return result
     result,images=parse_scene(root,url)
+    fill_profile_urls(result.get('performers', []), client)
     for image in images[:3]:
         try:result['image']=client.image(image,url);break
         except Exception:pass
