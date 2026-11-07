@@ -9,7 +9,8 @@ from public_html import Client,Document,clean,text_blocks
 
 BASE='https://www.bgeast.com'
 HOSTS={'www.bgeast.com','bgeast.com'}
-STUDIO='BG East'
+STUDIO = 'BG East Wrestling'
+PERFORMER_DISAMBIGUATION = 'BG East'
 PROFILE_PATH = '/profiles/index.php'
 DIRECTORY_URL = BASE + PROFILE_PATH + '?offset=1'
 
@@ -112,7 +113,7 @@ def parse_scene(root,url):
             if not label:
                 continue
             person = label[1]
-        people[target]={'name':person,'urls':[target],'gender':'Male','disambiguation':STUDIO}
+        people[target]={'name':person,'urls':[target],'gender':'Male','disambiguation':PERFORMER_DISAMBIGUATION}
     # Older matches can explicitly name an opponent without giving him a profile.
     # Use only the match's "A vs. B" credit line, never story prose or keywords.
     cast={p['name'].casefold():p for p in people.values()}
@@ -122,7 +123,7 @@ def parse_scene(root,url):
             person=clean(person).strip('* ')
             if re.fullmatch(r"[\w][\w .’'()-]{0,79}",person) and len(person.split())<=5:
                 key=person.casefold()
-                if key not in cast:cast[key]={'name':person,'gender':'Male','disambiguation':STUDIO}
+                if key not in cast:cast[key]={'name':person,'gender':'Male','disambiguation':PERFORMER_DISAMBIGUATION}
                 if key not in ordered:ordered.append(key)
     ordered.extend(k for k in cast if k not in ordered)
     if cast:result['performers']=[cast[k] for k in ordered]
@@ -158,7 +159,7 @@ def parse_performer(root,url):
         urljoin(url, node.attrs.get('href', '')) == DIRECTORY_URL
     ):
         raise ValueError('The requested wrestler ID did not return a profile')
-    result={'name':name,'urls':[url],'gender':'Male','disambiguation':STUDIO}
+    result={'name':name,'urls':[url],'gender':'Male','disambiguation':PERFORMER_DISAMBIGUATION}
     body=scope.first(lambda n:n.has_class('body'))
     if body:
         text=clean(body.text())
