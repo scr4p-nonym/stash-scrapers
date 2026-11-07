@@ -14,10 +14,24 @@ PERFORMER_DISAMBIGUATION = 'BG East'
 PROFILE_PATH = '/profiles/index.php'
 DIRECTORY_URL = BASE + PROFILE_PATH + '?offset=1'
 
-# BG East lists these seven products as new in Catalog 97. A January 2013
-# contemporary account identifies that catalog as the latest release. The
-# README records both sources. Only the year is supported by that evidence.
-RELEASE_YEARS = dict.fromkeys(('1425', '1426', '1427', '1428', '1429', '1430', '1431'), '2013')
+# Product IDs from BG East's catalog listings. The README records the
+# contemporary release coverage or archived homepages used to date each batch.
+RELEASE_YEARS = {
+    # Catalog 73
+    **dict.fromkeys(('1128', '1129', '1130', '1131'), '2008'),
+    # Catalog 87
+    **dict.fromkeys(('1271', '1272', '1274', '1275', '1277', '1278'), '2011'),
+    # Catalog 97
+    **dict.fromkeys(('1425', '1426', '1427', '1428', '1429', '1430', '1431'), '2013'),
+    # Catalogs 104.1 and 105
+    **dict.fromkeys(('1495', '1497', '1498', '1499', '1500', '1501', '1502'), '2014'),
+    **dict.fromkeys(('1508', '1509', '1510', '1511', '1512', '1513'), '2014'),
+    # Catalogs 107 and 109.2
+    **dict.fromkeys(('1524', '1525', '1526', '1527', '1528', '1529'), '2015'),
+    **dict.fromkeys(('1539', '1540', '1541', '1542'), '2015'),
+    # Catalog 172
+    **dict.fromkeys(('2040', '2041', '2042', '2043', '2044', '2045'), '2023'),
+}
 
 def canonical(value,kind='scene'):
     p=urlsplit(value);q=parse_qs(p.query)
