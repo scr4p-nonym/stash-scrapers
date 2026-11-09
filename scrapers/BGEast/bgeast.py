@@ -98,7 +98,8 @@ def parse_scene(root,url):
     for a in root.all(lambda n:n.tag=='a' and n.has_class('menuon') and n.attrs.get('href')):
         try:selected.append(canonical(urljoin(url,a.attrs['href'])))
         except ValueError:pass
-    if selected!=[url]:raise ValueError('The selected BG East match does not agree with the requested URL')
+    if selected and selected != [url]:
+        raise ValueError('The selected BG East match does not agree with the requested URL')
     heading=root.first(lambda n:n.has_class('headline3'))
     if not heading or not clean(heading.text()):raise ValueError('Individual match title unavailable')
     name=clean(heading.text()).rstrip('*').strip()
@@ -146,10 +147,21 @@ def parse_scene(root,url):
         p=urlsplit(urljoin(url,a.attrs['href']));q=parse_qs(p.query)
         if p.hostname in HOSTS and p.path=='/vidondemand.php' and len(q.get('vid',[]))==1:
             code=q['vid'][0]
-            if re.fullmatch(r'[A-Za-z0-9_-]{1,40}',code) and code.endswith('-'+match):
+            if re.fullmatch(r'[A-Za-z0-9_-]{1,40}',code):
                 codes[code]=BASE+'/vidondemand.php?'+urlencode({'vid':code})
-    if len(codes)==1:
-        result['code']=next(iter(codes));result['urls'].append(next(iter(codes.values())))
+    matching_codes = [code for code in codes if code.endswith('-' + match)]
+    if not selected:
+        # Some match pages omit the active navigation link. Check both IDs
+        # using the product selector and the page's unique VOD link.
+        product_selector = root.first(
+            lambda node: node.tag == 'select' and node.attrs.get('name') == 'qty_' + pid
+        )
+        if not product_selector or len(codes) != 1 or not matching_codes:
+            raise ValueError('BG East did not confirm the requested product and match')
+    if len(matching_codes) == 1:
+        code = matching_codes[0]
+        result['code'] = code
+        result['urls'].append(codes[code])
     images=[]
     for caption in root.all(lambda n:n.has_class('caption')):
         declared=[]
